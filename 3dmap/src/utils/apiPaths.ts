@@ -1,9 +1,9 @@
-export const BASE_URL = "http://localhost:8010";
-export const IMAGE_BASE_URL = "http://localhost:8010";
-//export const BASE_URL = "https://api-twg.jagradewata.id";
-//export const IMAGE_BASE_URL = "https://api-twg.jagradewata.id";
-//export const CENTRIFUGO_URL = "wss://centrifugo.jagradewata.id/connection/websocket"
-export const CENTRIFUGO_URL = "ws://localhost:8000/connection/websocket"
+//export const BASE_URL = "http://localhost:8010";
+//export const IMAGE_BASE_URL = "http://localhost:8010";
+export const BASE_URL = "https://api-twg.jagradewata.id";
+export const IMAGE_BASE_URL = "https://api-twg.jagradewata.id";
+export const CENTRIFUGO_URL = "wss://centrifugo.jagradewata.id/connection/websocket"
+//export const CENTRIFUGO_URL = "ws://localhost:8000/connection/websocket"
 
 export const API_PATHS = {
     AUTH : {

@@ -37,8 +37,7 @@ const SkenarioPlotPage = () => {
 
     const {id} = useParams();
 
-    const [name, setName] = useState("");
-    const [operasiName, setOperasiName] = useState("");
+
     const [centerX, setCenterX] = useState(config.center[0]);
     const [centerY, setCenterY] = useState(config.center[1]);
     const [zoom, setZoom] = useState(14);
@@ -58,6 +57,8 @@ const SkenarioPlotPage = () => {
     const [openEditGeom, setOpenEditGeom] = useState(false);
     const [openEditProperties, setOpenEditProperties] = useState(false);
     const [currentUnit, setCurrentUnit] = useState<GLTFMarker>(null);
+    const [shareUrl, setShareUrl] = useState("");
+    const [shareTitle, setShareTitle] = useState("");
 
     const initMap = (valName: string, valOperasiName: string, valOperasiId: string, valCenterX:number, valCenterY: number, valZoom: number, valPitch: number) => {
         if (!initialized.current && mapRef.current) {
@@ -139,8 +140,12 @@ const SkenarioPlotPage = () => {
             modelControlInstance.current = createModelControl(mapInstance.current);
             createMapEventModelControl(mapInstance.current, modelControlInstance.current);
             getMarkers();
-            console.log(operasiName);
-            console.log(name);
+            setShareUrl(`https://twg.jagradewata.id/preview/${valOperasiId as string}/${id}`);
+            setShareTitle(`${valOperasiName} - ${valName}`)
+
+            //Create Three Group
+
+
         }
     }
 
@@ -210,8 +215,7 @@ const SkenarioPlotPage = () => {
         try {
             const response = await axiosInstance.get(API_PATHS.SKENARIOS.GET(id as string))
             if (response.data.data) {
-                setName(response.data.data.name);
-                setOperasiName(response.data.data.operasi.name);
+
                 setOperasiId(response.data.data.operasi.id);
                 setCenterX(response.data.data.center_x);
                 setCenterY(response.data.data.center_y);
@@ -318,7 +322,7 @@ const SkenarioPlotPage = () => {
 
 
     return (
-        <MainLayout activeMenu="operasis" title="Plot Skenario">
+        <MainLayout activeMenu="operasis" title="Plot Skenario" share={{url: shareUrl, title: shareTitle}}>
             <div ref={mapRef} className="w-full h-full"></div>
             <SkenarioSettingsSheet
                 open={openMapSetting}

@@ -1,5 +1,5 @@
 import {Link} from "react-router-dom";
-import {Home, Layers2, LayoutDashboard, LogIn, Moon, Sun} from "lucide-react";
+import {Copy, Home, Layers2, LayoutDashboard, LogIn, Moon, Share2, Sun} from "lucide-react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar"
 import {
     DropdownMenu,
@@ -13,9 +13,22 @@ import {SidebarTrigger} from "@/components/ui/sidebar.tsx";
 import {useIdentify} from "@/context/AuthProvider.tsx";
 import {IMAGE_BASE_URL} from "@/utils/apiPaths.ts";
 import Logo from "@/assets/tik.png";
+import {
+    EmailIcon, EmailShareButton,
+    TelegramIcon, TelegramShareButton, WhatsappIcon, WhatsappShareButton
+} from "react-share";
+import {Popover, PopoverContent, PopoverTrigger} from "./ui/popover";
+import {consoleErrorApi} from "@/helpers/logs.ts";
+import {toast} from "sonner";
 
 
-const Navbar = ({isPublic = false, isOperasi = false, title}: { isPublic?: boolean, isOperasi?: boolean, title? : string }) => {
+const Navbar = ({isPublic = false, isOperasi = false, title, share}:
+                {
+                    isPublic?: boolean,
+                    isOperasi?: boolean,
+                    title?: string,
+                    share?: { url: string, title: string }
+                }) => {
 
     const {setTheme} = useTheme();
 
@@ -34,9 +47,51 @@ const Navbar = ({isPublic = false, isOperasi = false, title}: { isPublic?: boole
                 </Link>
             )}
 
-            {title && (<span>
-                {title}
-            </span>)}
+            {title && (<div className="flex items-center gap-2">
+                {share && (
+                    <Popover>
+                        <PopoverTrigger><Share2/></PopoverTrigger>
+                        <PopoverContent>
+                            <div className="flex items-center gap-2">
+                                <WhatsappShareButton
+                                    url={share.url}
+                                    title={share.title}
+                                    separator=":: "
+                                    className="p-4"
+                                >
+                                    <WhatsappIcon size={32} round/>
+                                </WhatsappShareButton>
+                                <TelegramShareButton
+                                    url={share.url}
+                                    title={share.title}
+                                    className="p-4"
+                                >
+                                    <TelegramIcon size={32} round />
+                                </TelegramShareButton>
+                                <EmailShareButton
+                                    url={share.url}
+                                    subject={share.title}
+                                    body="body"
+                                    className="p-4"
+                                >
+                                    <EmailIcon size={32} round/>
+                                </EmailShareButton>
+                                <Button className="rounded-full" size="sm" onClick={async () => {
+                                    try {
+                                        await navigator.clipboard.writeText(share.url);
+                                        toast.success("Url berhasil di copy")
+                                    } catch (error) {
+                                        consoleErrorApi(error, "Copy to clipboard");
+                                    }
+                                }}>
+                                    <Copy size={16}/>
+                                </Button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                )}
+                <span className="font-bold">{title}</span>
+            </div>)}
 
             {/*<Button variant="outline" onClick={toggleSidebar}>
                 Custom Button

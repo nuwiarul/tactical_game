@@ -40,6 +40,8 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
 
     const [openListSkenario, setOpenListSkenario] = useState(false);
     const [homeOperasis, setHomeOperasis] = useState<IHomeOperasi | null>(null)
+    const [shareUrl, setShareUrl] = useState("");
+    const [shareTitle, setShareTitle] = useState("");
 
     const removeGltfMarkers = (id: string) => {
         if (mapInstance.current) {
@@ -66,10 +68,6 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
             const iconlayer = getGltfLayerWithGroup(mapInstance.current, 'icon');
             if (gltfLayer) {
                 const units: GLTFMarker[] = [];
-
-
-
-
                 listUnits.forEach((item) => {
                     const baseModel = getUnit(item.kategori, item.unit_id)
                     if (baseModel) {
@@ -95,9 +93,7 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                         units.push(unit)
                     }
                 });
-
                 markerInstance.current = units
-
             }
         }
     }
@@ -240,10 +236,11 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
 
     const getSkenario = async (id: string | undefined) => {
         skenarioIdInstance.current = id as string;
+        setShareUrl(`https://twg.jagradewata.id/preview/${operasi_id as string}/${id}`);
         try {
             const response = await axiosInstance.get(API_PATHS.SKENARIOS.GET(id as string))
             if (response.data.data) {
-
+                setShareTitle(`${response.data.data.operasi.name} - ${response.data.data.name}`)
                 if (!initialized.current) {
                     initMap(response.data.data.name,
                         response.data.data.operasi.name,
@@ -402,7 +399,7 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
 
 
     return (
-        <MainLayout activeMenu={isRecord ? "games" : "latihans"} title={isRecord ? "Tactical Game" : "Latihan"}>
+        <MainLayout activeMenu={isRecord ? "games" : "latihans"} title={isRecord ? "Tactical Game" : "Latihan"} share={{url: shareUrl, title: shareTitle}}>
             <div ref={mapRef} className="w-full h-full"></div>
             <ListSkenarioSheet open={ openListSkenario } operasi={homeOperasis} setOpen={setOpenListSkenario} handleSkenarioChange={handleSkenarioChange} />
         </MainLayout>

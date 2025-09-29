@@ -129,10 +129,6 @@ export const createThreeLayer = (callback: (threeLayer: ThreeLayer) => void) => 
     // @ts-expect-error
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     threeLayer.prepareToDraw = function (gl, scene, camera) {
-
-
-
-
         const lightKiri = new THREE.DirectionalLight(0xffffff, 2);
         lightKiri.position.set(0, -10, 10).normalize();
         scene.add(lightKiri);
@@ -153,11 +149,6 @@ export const createThreeLayer = (callback: (threeLayer: ThreeLayer) => void) => 
         scene.add(lightDepan);
 
         //camera.add(new THREE.PointLight('#fff', 4));
-
-
-
-
-
         const ambientLight = new THREE.AmbientLight(0xffffff, 2); // Adjust the intensity (0.3) as needed
         scene.add(ambientLight);
         callback(threeLayer);
@@ -166,7 +157,7 @@ export const createThreeLayer = (callback: (threeLayer: ThreeLayer) => void) => 
     return threeLayer;
 }
 
-export const createGroupGLLayer = (map: Map, threeLayer: ThreeLayer) => {
+export const createThreeGroupGLLayer = (map: Map, threeLayer: ThreeLayer) => {
     const sceneConfig = {
         postProcess: {
             enable: true,
@@ -182,7 +173,7 @@ export const createGroupGLLayer = (map: Map, threeLayer: ThreeLayer) => {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    const groupLayer = new GroupGLLayer('group', [threeLayer], {sceneConfig, onlyWebGL1: false});
+    const groupLayer = new GroupGLLayer('groupThree', [threeLayer], {sceneConfig, onlyWebGL1: false});
     groupLayer.addTo(map);
 
 
@@ -218,7 +209,7 @@ export const createGroupGltfLayer = (map: Map, gltfLayers: GLTFLayer[]) => {
 
 export const getThreeLayerWithGroup= (map:Map) => {
     if (map) {
-        const groupLayer = map.getLayer('group') as GroupGLLayer;
+        const groupLayer = map.getLayer('groupThree') as GroupGLLayer;
         if (groupLayer.getLayers().length > 0) {
             return groupLayer.getLayers()[0] as ThreeLayer;
         }
