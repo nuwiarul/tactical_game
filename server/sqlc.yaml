@@ -1,0 +1,24 @@
+version: "2"
+sql:
+    - schema: "db/migration"
+      queries: "db/query"
+      engine: "postgresql"
+      gen:
+          go:
+              package: "db"
+              out: "db/sqlc"
+              emit_json_tags: true
+              sql_package: "pgx/v5"
+              emit_prepared_queries: false
+              emit_interface: true
+              emit_exact_table_names: false
+              emit_empty_slices: true
+              overrides:
+                - db_type: "timestamptz"
+                  go_type: "time.Time"
+                - db_type: "uuid"
+                  go_type: "github.com/google/uuid.UUID"
+      database:
+          uri: "postgresql://twg_user:twg_12345678_*polda_BaLi_!_987654321@jagradewata.vinrul.id:5432/twg_db?sslmode=disable"
+      rules:
+          - sqlc/db-prepare

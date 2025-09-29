@@ -1,0 +1,8 @@
+.content {
+    background: rgba(135,196,240, 0.8);
+    width : 200px;
+    height: 100px;
+    border: 2px #fff solid;
+    padding : 10px;
+    color : #fff;
+}
