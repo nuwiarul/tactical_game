@@ -84,6 +84,7 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                             dragable: true,
                             callbackdrag: callbackDrag,
                             isMove: item.kategori !== "bangunan",
+                            scale: item.scale,
 
                         })
                         units.push(unit)

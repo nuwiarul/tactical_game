@@ -84,6 +84,7 @@ const HomeIndex = () => {
                             unit_id: item.unit_id,
                             name: item.name,
                             icon: baseModel.icon,
+                            scale: item.scale,
                             description: `${item.kategori !== "bangunan" ? `Jumlah ${item.jumlah}<br/>` : "" }${item.keterangan}`,
                             child: baseModel.child,
                             keterangan: item.keterangan,

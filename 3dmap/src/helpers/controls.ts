@@ -8,7 +8,7 @@ export const createModelControl = (map: Map, callback?: (id: string, command: st
         lineSymbol: {
             lineColor: '#fff'
         },
-        scaleColor: 'transparent' ,
+        scaleColor: 'red' ,
         heightColor: 'transparent',
         rotateColor: 'blue',
         translateColor: 'green',
@@ -25,7 +25,7 @@ export const createModelControl = (map: Map, callback?: (id: string, command: st
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    modelControl.on('translate rotation rotation_out translate_out translate_in', e => {
+    modelControl.on('translate rotation scale rotation_out translate_out translate_in', e => {
         const {type} = e;
 
         const currentModel = e.target.model;
@@ -120,6 +120,17 @@ export const createModelControl = (map: Map, callback?: (id: string, command: st
                     }
                     callback(properties.id, "ROT", JSON.stringify(data));
                 }
+            }
+        }
+
+        if (type === 'scale') {
+            if (currentModel) {
+                const scale = e.scale;
+                const properties = currentModel.getProperties() as IObjectProperties;
+                if (properties && properties.originalHeight) {
+                    currentModel.setScale(scale, scale, scale)
+                }
+
             }
         }
 

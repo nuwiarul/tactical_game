@@ -125,6 +125,7 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         this._mousedownPoint = null;
         this._enable = false;
         this.isDown = false;
+        this.isScale = false;
         this._initStates();
     }
 
@@ -196,6 +197,10 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         return this;
     }
 
+    setIsScale(isScale) {
+        this.isScale = isScale;
+    }
+
     getModel() {
         return this.model;
     }
@@ -265,26 +270,23 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         const getChildDom = (selector) => {
             return dom.querySelector(selector);
         };
-        /*
+        const isScale = this.isScale;
         const scale = getChildDom(`${className}${SCALE}`);
         const scaleHighLight = getChildDom(`${className}${SCALE}-${HIGH_LIGHT}`);
+        if (isScale) {
 
-        const scaleMouseMove = () => {
-            if (!this.isDown) {
-                domShow(scaleHighLight);
-                if (!this.operateModel) {
-                    this.operateModel = SCALE;
-                    map.setCursor(scaleCursor);
+            const scaleMouseMove = () => {
+                if (!this.isDown) {
+                    domShow(scaleHighLight);
+                    if (!this.operateModel) {
+                        this.operateModel = SCALE;
+                        map.setCursor(scaleCursor);
+                    }
                 }
-            }
-        };
-
-
-        on(scale, MOUSE_ENTER_EVENT, scaleMouseMove);
-        on(scale, MOUSE_MOVE_EVENT, scaleMouseMove);
-
-         */
-
+            };
+            on(scale, MOUSE_ENTER_EVENT, scaleMouseMove);
+            on(scale, MOUSE_MOVE_EVENT, scaleMouseMove);
+        }
         const rotation = getChildDom(`${className}${ROTATION}`);
         const rotationHighLight = getChildDom(`${className}${ROTATION}-${HIGH_LIGHT}`);
         const rotationMousemove = () => {
@@ -336,13 +338,14 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
             this.isDown = true;
             mapConfig(map, false);
         };
-        /*
-        on(scale, MOUSE_DOWN_EVENT, () => {
-            mousedownFun();
-            this.operateModel = SCALE;
-        });
 
-         */
+        if(this.isScale) {
+            on(scale, MOUSE_DOWN_EVENT, () => {
+                mousedownFun();
+                this.operateModel = SCALE;
+            });
+        }
+
         on(rotation, MOUSE_DOWN_EVENT, () => {
             mousedownFun();
             this.operateModel = ROTATION;
@@ -358,27 +361,54 @@ export class ModelControl extends maptalks.Eventable(maptalks.Class) {
         });
 
          */
-        [, rotation, translate].filter(element => {
-            return element;
-        }).forEach(element => {
-            on(element, MOUSE_LEAVE_EVENT, e => {
-                let hightlight;
-                if (element === rotation) {
-                    hightlight = rotationHighLight;
-                } else if (element === translate) {
-                    hightlight = translateHighLight;
-                }
-                if (!this.isDown) {
-                    domHide(hightlight);
-                    map.resetCursor();
-                    mapConfig(map, true);
-                    this.isDown = false;
-                    this.operateModel = '';
-                    this._fireOutEvent();
-                }
+        if (this.isScale) {
+            [scale, rotation, translate].filter(element => {
+                return element;
+            }).forEach(element => {
+                on(element, MOUSE_LEAVE_EVENT, e => {
+                    let hightlight;
+                    if (element === scale) {
+                        hightlight = scaleHighLight;
+                    } else if (element === rotation) {
+                        hightlight = rotationHighLight;
+                    } else if (element === translate) {
+                        hightlight = translateHighLight;
+                    }
+                    if (!this.isDown) {
+                        domHide(hightlight);
+                        map.resetCursor();
+                        mapConfig(map, true);
+                        this.isDown = false;
+                        this.operateModel = '';
+                        this._fireOutEvent();
+                    }
+                });
             });
-        });
-        this.highLightDoms = [translateHighLight, rotationHighLight];
+            this.highLightDoms = [translateHighLight, rotationHighLight];
+        } else {
+            [, rotation, translate].filter(element => {
+                return element;
+            }).forEach(element => {
+                on(element, MOUSE_LEAVE_EVENT, e => {
+                    let hightlight;
+                    if (element === rotation) {
+                        hightlight = rotationHighLight;
+                    } else if (element === translate) {
+                        hightlight = translateHighLight;
+                    }
+                    if (!this.isDown) {
+                        domHide(hightlight);
+                        map.resetCursor();
+                        mapConfig(map, true);
+                        this.isDown = false;
+                        this.operateModel = '';
+                        this._fireOutEvent();
+                    }
+                });
+            });
+            this.highLightDoms = [translateHighLight, rotationHighLight];
+        }
+
         /*
         [scale, rotation, translate, height].filter(element => {
             return element;

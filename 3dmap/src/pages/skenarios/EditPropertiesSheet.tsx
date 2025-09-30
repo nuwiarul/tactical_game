@@ -7,6 +7,7 @@ import axiosInstance from "@/utils/axiosInstance.ts";
 import {API_PATHS} from "@/utils/apiPaths.ts";
 import {toast} from "sonner";
 import {consoleErrorApi} from "@/helpers/logs.ts";
+import {ScrollArea} from "@/components/ui/scroll-area.tsx";
 
 interface EditPropertiesSheetProps {
     open: boolean;
@@ -21,7 +22,18 @@ interface EditPropertiesSheetProps {
     handlePropsChange?: (name: string, jumlah: number, keterangan: string) => void;
 }
 
-const EditPropertiesSheet = ({open, name, jumlah, keterangan, setKeterangan, setName, setJumlah , close, id,  handlePropsChange} : EditPropertiesSheetProps) => {
+const EditPropertiesSheet = ({
+                                 open,
+                                 name,
+                                 jumlah,
+                                 keterangan,
+                                 setKeterangan,
+                                 setName,
+                                 setJumlah,
+                                 close,
+                                 id,
+                                 handlePropsChange
+                             }: EditPropertiesSheetProps) => {
 
 
     const onUpdate = async () => {
@@ -41,32 +53,35 @@ const EditPropertiesSheet = ({open, name, jumlah, keterangan, setKeterangan, set
     }
 
     return (
-        <Sheet open={open} >
+        <Sheet open={open}>
             <SheetContent>
                 <SheetHeader>
                     <SheetTitle className="mb-4">Edit Properties</SheetTitle>
                     <SheetDescription>
                     </SheetDescription>
                 </SheetHeader>
-                <div className="p-4 -mt-10 flex flex-col gap-8">
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="nama">Nama</Label>
-                        <Input type="text" id="nama" value={name} onChange={(e) => setName(e.target.value)} />
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="jumlah">Jumlah</Label>
-                        <Input type="number" id="nama" value={jumlah} onChange={(e) => setJumlah(parseInt(e.target.value))} />
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="keterangan">Keterangan</Label>
-                        <Textarea onChange={(e) => setKeterangan(e.target.value)} value={keterangan} />
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Button onClick={onUpdate}>Update</Button>
-                        <Button onClick={close}>Close</Button>
-                    </div>
+                <ScrollArea className="max-h-full">
+                    <div className="p-4 mb-25 flex flex-col gap-8">
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="nama">Nama</Label>
+                            <Input type="text" id="nama" value={name} onChange={(e) => setName(e.target.value)}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="jumlah">Jumlah</Label>
+                            <Input type="number" id="nama" value={jumlah}
+                                   onChange={(e) => setJumlah(parseInt(e.target.value))}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="keterangan">Keterangan</Label>
+                            <Textarea onChange={(e) => setKeterangan(e.target.value)} value={keterangan}/>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Button onClick={onUpdate}>Update</Button>
+                            <Button onClick={close}>Close</Button>
+                        </div>
 
-                </div>
+                    </div>
+                </ScrollArea>
             </SheetContent>
         </Sheet>
     );

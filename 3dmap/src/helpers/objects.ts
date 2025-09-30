@@ -26,6 +26,7 @@ export interface IObjectProperties {
     icon?: GLTFMarker;
     child?: GLTFMarker;
     space?: number;
+    originalHeight?: number;
 }
 
 export interface IBuildingProperties {
@@ -37,7 +38,7 @@ export interface IBuildingProperties {
 export const createBaseObject = (
     gltfLayer: GLTFLayer, iconLayer: GLTFLayer, modelControl: ModelControl,
     {url, center, height, rotation, animation, name, id, unit_id, description, icon, child, keterangan, jumlah,
-        editGeom, editProperties, deleteObject, isMove = true, callbackinfo, dragable = false, callbackdrag}:
+        editGeom, editProperties, deleteObject, isMove = true, callbackinfo, dragable = false, callbackdrag, scale = 1, editScale, editRotasi}:
     {
         url:string,
         center: number[],
@@ -52,7 +53,10 @@ export const createBaseObject = (
         unit_id?: string,
         keterangan?: string,
         jumlah?: number,
+        scale?: number,
         editGeom?: (marker: GLTFMarker, id: string) => void,
+        editScale?: (marker: GLTFMarker, id: string) => void,
+        editRotasi?: (marker: GLTFMarker, id: string) => void,
         editProperties?: (id: string, jumlah: number, name: string, keterangan: string, marker: GLTFMarker) => void,
         deleteObject?: (id: string, marker: GLTFMarker) => void,
         isMove?: boolean,
@@ -90,6 +94,8 @@ export const createBaseObject = (
         content: `<span style="color: grey;">${description}<span>`,
     });
 
+    gltfMarker.setScale(scale, scale, scale)
+
     gltfMarker.getInfoWindow().on("showend hide", (e: { type: string; }) => {
         if (callbackinfo) {
             if (e.type === "showend") {
@@ -100,7 +106,6 @@ export const createBaseObject = (
         }
 
     });
-
 
     gltfMarker.on('dragend', (e: { coordinate: { x: number; y: number; }; }) => {
         if (callbackdrag) {
@@ -121,12 +126,13 @@ export const createBaseObject = (
         unit_id: unit_id,
         keterangan: keterangan,
         jumlah: jumlah,
+        originalHeight: height,
     }
 
     const menus = [];
 
     if (isMove) {
-        menus.push({ item: 'Move & Rotate', click: () => {
+        menus.push({ item: `Move & Rotate ${modelControl.isScale ? "& Scale" : ""}`, click: () => {
 
                 const model = modelControl.getModel();
                 if (model) {
@@ -138,13 +144,32 @@ export const createBaseObject = (
 
                 gltfMarker.config('draggable', true);
                 modelControl.setModel(gltfMarker);
+
+                if (modelControl.isScale) {
+                    modelControl.setOriginalScale(gltfMarker.getScale()[0]);
+                }
+
                 modelControl.enable();
+                console.log(modelControl)
             }})
     }
 
     if (editGeom) {
         menus.push({ item: 'Edit Posisi dan Rotasi', click: () => {
                     editGeom(gltfMarker, id);
+            }});
+
+    }
+
+    if (editScale) {
+        menus.push({ item: 'Edit Scale', click: () => {
+                editScale(gltfMarker, id);
+            }});
+    }
+
+    if (editRotasi) {
+        menus.push({ item: 'Edit Rotasi', click: () => {
+                editRotasi(gltfMarker, id);
             }});
     }
 
@@ -214,7 +239,7 @@ export const createBaseObject = (
 
 export const createHomeBaseObject = (
     gltfLayer: GLTFLayer, iconLayer: GLTFLayer,
-    {url, center, height, rotation, animation, name, id, unit_id, description, icon, child, keterangan, jumlah}:
+    {url, center, height, rotation, animation, name, id, unit_id, description, icon, child, keterangan, jumlah, scale = 1}:
     {
         url:string,
         center: number[],
@@ -229,6 +254,7 @@ export const createHomeBaseObject = (
         unit_id?: string,
         keterangan?: string,
         jumlah?: number,
+        scale?: number,
         editGeom?: (marker: GLTFMarker, id: string) => void,
         editProperties?: (id: string, jumlah: number, name: string, keterangan: string, marker: GLTFMarker) => void,
         deleteObject?: (id: string, marker: GLTFMarker) => void,
@@ -261,7 +287,9 @@ export const createHomeBaseObject = (
     gltfMarker.setInfoWindow({
         title: `<span style="color: grey;">${name}<span>`,
         content: `<span style="color: grey;">${description}<span>`,
-    })
+    });
+
+    gltfMarker.setScale(scale, scale, scale)
 
     const properties: IObjectProperties = {
         name: name,

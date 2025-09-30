@@ -70,6 +70,7 @@ const PreviewMap = () => {
                             keterangan: item.keterangan,
                             jumlah: item.jumlah,
                             isMove: item.kategori !== "bangunan",
+                            scale: item.scale,
                         })
                         units.push(unit)
                     }

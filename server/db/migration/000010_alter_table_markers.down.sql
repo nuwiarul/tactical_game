@@ -1,0 +1,2 @@
+ALTER TABLE markers
+    DROP COLUMN IF EXISTS scale

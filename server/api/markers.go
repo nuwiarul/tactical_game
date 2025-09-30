@@ -24,6 +24,7 @@ type Marker struct {
 	RotZ       float64   `json:"rot_z"`
 	PosX       float64   `json:"pos_x"`
 	PosY       float64   `json:"pos_y"`
+	Scale      float64   `json:"scale"`
 	Keterangan string    `json:"keterangan"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
@@ -68,6 +69,14 @@ type markerKetRequest struct {
 	Name       string `json:"name" binding:"required"`
 	Jumlah     int32  `json:"jumlah" binding:"required"`
 	Keterangan string `json:"keterangan"`
+}
+
+type markerScaleRequest struct {
+	Scale float64 `json:"scale" binding:"required"`
+}
+
+type markerRotasiRequest struct {
+	Rotasi float64 `json:"rotasi"`
 }
 
 func (server *Server) createMarkers(ctx *gin.Context) {
@@ -133,6 +142,7 @@ func (server *Server) createMarkers(ctx *gin.Context) {
 			Jumlah:     row.Jumlah.Int32,
 			Keterangan: row.Keterangan.String,
 			Kategori:   row.Kategori.String,
+			Scale:      row.Scale.Float64,
 			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
 			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
 		},
@@ -183,6 +193,7 @@ func (server *Server) listMarkers(ctx *gin.Context) {
 			PosX:       row.PosX.Float64,
 			PosY:       row.PosY.Float64,
 			Keterangan: row.Keterangan.String,
+			Scale:      row.Scale.Float64,
 			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
 			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
 		})
@@ -296,6 +307,135 @@ func (server *Server) updateMarkerGeom(ctx *gin.Context) {
 			Jumlah:     row.Jumlah.Int32,
 			Keterangan: row.Keterangan.String,
 			Kategori:   row.Kategori.String,
+			Scale:      row.Scale.Float64,
+			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
+			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+
+}
+
+func (server *Server) updateMarkerScale(ctx *gin.Context) {
+
+	//authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	var req markerScaleRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Error().Err(err).Msg("updateMarkerScale")
+		ctx.JSON(http.StatusBadRequest, badRequestResponse(err))
+		return
+	}
+
+	id, err := uuid.Parse(ctx.Param("id"))
+
+	if err != nil {
+		log.Error().Err(err).Msg("updateMarkerScale")
+		ctx.JSON(http.StatusBadRequest, badRequestResponse(err))
+		return
+	}
+
+	row, err := server.store.UpdateMarkerScale(ctx, db.UpdateMarkerScaleParams{
+		ID:    id,
+		Scale: db.ToFloat8(req.Scale),
+	})
+
+	if err != nil {
+		log.Error().Err(err).Msg("updateMarkerScale")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	skenario, err := server.getRowSkenario(ctx, row.SkenarioID.String())
+	if err != nil {
+		log.Error().Err(err).Msg("updateMarkerScale")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	resp := markerSingleResponse{
+		Code:    http.StatusOK,
+		Message: "success",
+		Data: Marker{
+			ID:         row.ID,
+			Name:       row.Name.String,
+			Operasi:    skenario.Operasi,
+			Skenario:   skenario,
+			UnitId:     row.UnitID.String(),
+			RotX:       row.RotX.Float64,
+			RotY:       row.RotY.Float64,
+			RotZ:       row.RotZ.Float64,
+			PosX:       row.PosX.Float64,
+			PosY:       row.PosY.Float64,
+			Jumlah:     row.Jumlah.Int32,
+			Keterangan: row.Keterangan.String,
+			Kategori:   row.Kategori.String,
+			Scale:      row.Scale.Float64,
+			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
+			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+
+}
+
+func (server *Server) updateMarkerRotasi(ctx *gin.Context) {
+
+	//authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	var req markerRotasiRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Error().Err(err).Msg("updateMarkerRotasi")
+		ctx.JSON(http.StatusBadRequest, badRequestResponse(err))
+		return
+	}
+
+	id, err := uuid.Parse(ctx.Param("id"))
+
+	if err != nil {
+		log.Error().Err(err).Msg("updateMarkerRotasi")
+		ctx.JSON(http.StatusBadRequest, badRequestResponse(err))
+		return
+	}
+
+	row, err := server.store.UpdateMarkerRotasi(ctx, db.UpdateMarkerRotasiParams{
+		ID:     id,
+		Rotasi: db.ToFloat8(req.Rotasi),
+	})
+
+	if err != nil {
+		log.Error().Err(err).Msg("updateMarkerRotasi")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	skenario, err := server.getRowSkenario(ctx, row.SkenarioID.String())
+	if err != nil {
+		log.Error().Err(err).Msg("updateMarkerRotasi")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	resp := markerSingleResponse{
+		Code:    http.StatusOK,
+		Message: "success",
+		Data: Marker{
+			ID:         row.ID,
+			Name:       row.Name.String,
+			Operasi:    skenario.Operasi,
+			Skenario:   skenario,
+			UnitId:     row.UnitID.String(),
+			RotX:       row.RotX.Float64,
+			RotY:       row.RotY.Float64,
+			RotZ:       row.RotZ.Float64,
+			PosX:       row.PosX.Float64,
+			PosY:       row.PosY.Float64,
+			Jumlah:     row.Jumlah.Int32,
+			Keterangan: row.Keterangan.String,
+			Kategori:   row.Kategori.String,
+			Scale:      row.Scale.Float64,
 			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
 			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
 		},
@@ -361,6 +501,7 @@ func (server *Server) updateMarkerName(ctx *gin.Context) {
 			Jumlah:     row.Jumlah.Int32,
 			Keterangan: row.Keterangan.String,
 			Kategori:   row.Kategori.String,
+			Scale:      row.Scale.Float64,
 			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
 			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
 		},

@@ -33,6 +33,8 @@ import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
 import EditBuildingPropertiesSheet from "@/pages/skenarios/EditBuildingPropertiesSheet.tsx";
 import * as THREE from "three";
 import {getBuildings} from "@/helpers/games.ts";
+import EditScaleSheet from "@/pages/skenarios/EditScaleSheet.tsx";
+import EditRotasiSheet from "@/pages/skenarios/EditRotasiSheet.tsx";
 
 const SkenarioPlotPage = () => {
 
@@ -63,6 +65,7 @@ const SkenarioPlotPage = () => {
     const [unitName, setUnitName] = useState("");
     const [unitKeterangan, setUnitKeterangan] = useState("");
     const [unitId, setUnitId] = useState("");
+    const [unitScale, setUnitScale] = useState(1);
     const [openEditGeom, setOpenEditGeom] = useState(false);
     const [openEditProperties, setOpenEditProperties] = useState(false);
     const [currentUnit, setCurrentUnit] = useState<GLTFMarker>(null);
@@ -78,6 +81,8 @@ const SkenarioPlotPage = () => {
     const [buildingHeight, setBuildingHeight] = useState(0);
     const [buildingId, setBuildingId] = useState("");
     const [openUpdateBuilding, setOpenUpdateBuilding] = useState(false);
+    const [openEditScale, setOpenEditScale] = useState(false);
+    const [openEditRotasi, setOpenEditRotasi] = useState(false);
 
     const initMap = (valName: string, valOperasiName: string, valOperasiId: string, valCenterX:number, valCenterY: number, valZoom: number, valPitch: number) => {
         if (!initialized.current && mapRef.current) {
@@ -184,6 +189,7 @@ const SkenarioPlotPage = () => {
             const iconlayer = new GLTFLayer('icon');
             const groupGlLayer = createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]) as GroupGLLayer;
             modelControlInstance.current = createModelControl(mapInstance.current);
+            modelControlInstance.current.setIsScale(true);
             createMapEventModelControl(mapInstance.current, modelControlInstance.current);
             setShareUrl(`https://twg.jagradewata.id/preview/${valOperasiId as string}/${id}`);
             setShareTitle(`${valOperasiName} - ${valName}`)
@@ -223,11 +229,14 @@ const SkenarioPlotPage = () => {
                             unit_id: item.unit_id,
                             name: item.name,
                             icon: baseModel.icon,
+                            scale: item.scale,
                             description: `${item.kategori !== "bangunan" ? `Jumlah ${item.jumlah}<br/>` : "" }${item.keterangan}`,
                             child: baseModel.child,
                             keterangan: item.keterangan,
                             jumlah: item.jumlah,
                             editGeom: editGeom,
+                            editScale: editScale,
+                            editRotasi: editRotasi,
                             editProperties: editProperties,
                             deleteObject: deleteObject,
                         })
@@ -335,6 +344,22 @@ const SkenarioPlotPage = () => {
         setOpenEditGeom(true);
     }
 
+    const editScale =  (marker: GLTFMarker, id: string) => {
+        const scale = marker.getScale();
+        setUnitScale(scale[0]);
+        setUnitId(id);
+        setCurrentUnit(marker);
+        setOpenEditScale(true);
+    }
+
+    const editRotasi =  (marker: GLTFMarker, id: string) => {
+        const rot = marker.getRotation();
+        setRotZ(rot[2]);
+        setUnitId(id);
+        setCurrentUnit(marker);
+        setOpenEditRotasi(true);
+    }
+
     const editProperties = (id: string, jumlah: number, name: string, keterangan: string, marker: GLTFMarker) => {
         setUnitId(id)
         setUnitJumlah(jumlah)
@@ -405,6 +430,8 @@ const SkenarioPlotPage = () => {
                         editGeom: editGeom,
                         editProperties: editProperties,
                         deleteObject: deleteObject,
+                        editScale: editScale,
+                        editRotasi: editRotasi,
                     })
                 }
             }
@@ -465,6 +492,22 @@ const SkenarioPlotPage = () => {
         }
     }
 
+    const handleScaleChange = (value: number) => {
+        if (currentUnit) {
+            currentUnit.setScale(value, value, value);
+            setOpenEditScale(false);
+        }
+    }
+
+    const handleRotasiChange = (value: number) => {
+        if (currentUnit) {
+            const rot = currentUnit.getRotation();
+            currentUnit.setRotation(rot[0], rot[1], value)
+            //currentUnit.setScale(value, value, value);
+            setOpenEditRotasi(false);
+        }
+    }
+
 
     return (
         <MainLayout activeMenu="operasis" title="Plot Skenario" share={{url: shareUrl, title: shareTitle}}>
@@ -503,6 +546,22 @@ const SkenarioPlotPage = () => {
                 rotZ={rotZ}
                 id={unitId}
                 close={() => setOpenEditGeom(false)}
+            />
+            <EditScaleSheet
+                open={openEditScale}
+                scale={unitScale}
+                setScale={(value: number) => { setUnitScale(value)}}
+                id={unitId}
+                handleScaleChange={handleScaleChange}
+                close={() => setOpenEditScale(false)}
+            />
+            <EditRotasiSheet
+                open={openEditRotasi}
+                rotasi={rotZ}
+                setRotasi={(value: number) => { setRotZ(value)}}
+                id={unitId}
+                handleRotasiChange={handleRotasiChange}
+                close={() => setOpenEditRotasi(false)}
             />
             <EditPropertiesSheet
                 open={openEditProperties}

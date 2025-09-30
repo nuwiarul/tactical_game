@@ -1,7 +1,7 @@
 import type {IHomeOperasi} from "@/pages/home/ListOperasi.tsx";
 import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/components/ui/sheet.tsx";
 import {Button} from "@/components/ui/button.tsx";
-
+import {ScrollArea} from "./ui/scroll-area";
 
 interface ListSkenarioSheetProps {
     open: boolean;
@@ -20,12 +20,16 @@ const ListSkenarioSheet = ({open, operasi, setOpen, handleSkenarioChange}: ListS
 
                     </SheetDescription>
                 </SheetHeader>
-                <div className="p-4 -mt-10 flex flex-col gap-8">
-                    {operasi ? operasi.skenario.map(item => (
-                        <Button key={item.skenario_id} onClick={() => handleSkenarioChange(item.skenario_id)}>{item.name}</Button>
-                    )) : (<></>)}
+                <ScrollArea className="max-h-full">
+                    <div className="p-4 flex flex-col gap-2">
+                        {operasi ? operasi.skenario.map(item => (
+                            <Button key={item.skenario_id}
+                                    onClick={() => handleSkenarioChange(item.skenario_id)}>{item.name}</Button>
+                        )) : (<></>)}
 
-                </div>
+                    </div>
+
+                </ScrollArea>
             </SheetContent>
         </Sheet>
     );

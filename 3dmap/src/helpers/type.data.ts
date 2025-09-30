@@ -32,6 +32,7 @@ export interface IUnit {
     rot_z: number;
     pos_x: number;
     pos_y: number;
+    scale: number;
     keterangan: string;
     created_at: string;
     updated_at: string;

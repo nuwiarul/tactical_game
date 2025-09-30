@@ -15,7 +15,7 @@ import (
 const createMarker = `-- name: CreateMarker :one
 INSERT INTO markers (name, operasi_id, skenario_id, unit_id,  jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, kategori)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-RETURNING id, operasi_id, skenario_id, unit_id, name, kategori, jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, created_at, updated_at
+RETURNING id, operasi_id, skenario_id, unit_id, name, kategori, jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, created_at, updated_at, scale
 `
 
 type CreateMarkerParams struct {
@@ -65,6 +65,7 @@ func (q *Queries) CreateMarker(ctx context.Context, arg CreateMarkerParams) (Mar
 		&i.Keterangan,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Scale,
 	)
 	return i, err
 }
@@ -81,7 +82,7 @@ func (q *Queries) DeleteMarkers(ctx context.Context, id uuid.UUID) error {
 
 const getMarker = `-- name: GetMarker :one
 SELECT
-    id, name, operasi_id, skenario_id, unit_id,  jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, kategori,  created_at, updated_at
+    id, name, operasi_id, skenario_id, unit_id,  jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, kategori, scale,  created_at, updated_at
 FROM
     markers
 WHERE id = $1
@@ -101,6 +102,7 @@ type GetMarkerRow struct {
 	PosY       pgtype.Float8    `json:"pos_y"`
 	Keterangan pgtype.Text      `json:"keterangan"`
 	Kategori   pgtype.Text      `json:"kategori"`
+	Scale      pgtype.Float8    `json:"scale"`
 	CreatedAt  pgtype.Timestamp `json:"created_at"`
 	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
 }
@@ -122,6 +124,7 @@ func (q *Queries) GetMarker(ctx context.Context, id uuid.UUID) (GetMarkerRow, er
 		&i.PosY,
 		&i.Keterangan,
 		&i.Kategori,
+		&i.Scale,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -130,7 +133,7 @@ func (q *Queries) GetMarker(ctx context.Context, id uuid.UUID) (GetMarkerRow, er
 
 const listMarkersBySkenario = `-- name: ListMarkersBySkenario :many
 SELECT
-    id, name, operasi_id, skenario_id, unit_id,  jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, kategori,  created_at, updated_at
+    id, name, operasi_id, skenario_id, unit_id,  jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, kategori, scale,  created_at, updated_at
 FROM
     markers
 WHERE skenario_id = $1
@@ -151,6 +154,7 @@ type ListMarkersBySkenarioRow struct {
 	PosY       pgtype.Float8    `json:"pos_y"`
 	Keterangan pgtype.Text      `json:"keterangan"`
 	Kategori   pgtype.Text      `json:"kategori"`
+	Scale      pgtype.Float8    `json:"scale"`
 	CreatedAt  pgtype.Timestamp `json:"created_at"`
 	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
 }
@@ -178,6 +182,7 @@ func (q *Queries) ListMarkersBySkenario(ctx context.Context, skenarioID pgtype.U
 			&i.PosY,
 			&i.Keterangan,
 			&i.Kategori,
+			&i.Scale,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -202,7 +207,7 @@ SET
     updated_at = NOW()
 WHERE
     id = $6
-RETURNING id, operasi_id, skenario_id, unit_id, name, kategori, jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, created_at, updated_at
+RETURNING id, operasi_id, skenario_id, unit_id, name, kategori, jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, created_at, updated_at, scale
 `
 
 type UpdateMarkerGeomParams struct {
@@ -240,6 +245,7 @@ func (q *Queries) UpdateMarkerGeom(ctx context.Context, arg UpdateMarkerGeomPara
 		&i.Keterangan,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Scale,
 	)
 	return i, err
 }
@@ -253,7 +259,7 @@ SET
     updated_at = NOW()
 WHERE
     id = $4
-RETURNING id, operasi_id, skenario_id, unit_id, name, kategori, jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, created_at, updated_at
+RETURNING id, operasi_id, skenario_id, unit_id, name, kategori, jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, created_at, updated_at, scale
 `
 
 type UpdateMarkerNameParams struct {
@@ -287,6 +293,85 @@ func (q *Queries) UpdateMarkerName(ctx context.Context, arg UpdateMarkerNamePara
 		&i.Keterangan,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Scale,
+	)
+	return i, err
+}
+
+const updateMarkerRotasi = `-- name: UpdateMarkerRotasi :one
+UPDATE markers
+SET
+    rot_z = $1,
+    updated_at = NOW()
+WHERE
+    id = $2
+RETURNING id, operasi_id, skenario_id, unit_id, name, kategori, jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, created_at, updated_at, scale
+`
+
+type UpdateMarkerRotasiParams struct {
+	Rotasi pgtype.Float8 `json:"rotasi"`
+	ID     uuid.UUID     `json:"id"`
+}
+
+func (q *Queries) UpdateMarkerRotasi(ctx context.Context, arg UpdateMarkerRotasiParams) (Marker, error) {
+	row := q.db.QueryRow(ctx, updateMarkerRotasi, arg.Rotasi, arg.ID)
+	var i Marker
+	err := row.Scan(
+		&i.ID,
+		&i.OperasiID,
+		&i.SkenarioID,
+		&i.UnitID,
+		&i.Name,
+		&i.Kategori,
+		&i.Jumlah,
+		&i.RotX,
+		&i.RotY,
+		&i.RotZ,
+		&i.PosX,
+		&i.PosY,
+		&i.Keterangan,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Scale,
+	)
+	return i, err
+}
+
+const updateMarkerScale = `-- name: UpdateMarkerScale :one
+UPDATE markers
+SET
+    scale = $1,
+    updated_at = NOW()
+WHERE
+    id = $2
+RETURNING id, operasi_id, skenario_id, unit_id, name, kategori, jumlah, rot_x, rot_y, rot_z, pos_x, pos_y, keterangan, created_at, updated_at, scale
+`
+
+type UpdateMarkerScaleParams struct {
+	Scale pgtype.Float8 `json:"scale"`
+	ID    uuid.UUID     `json:"id"`
+}
+
+func (q *Queries) UpdateMarkerScale(ctx context.Context, arg UpdateMarkerScaleParams) (Marker, error) {
+	row := q.db.QueryRow(ctx, updateMarkerScale, arg.Scale, arg.ID)
+	var i Marker
+	err := row.Scan(
+		&i.ID,
+		&i.OperasiID,
+		&i.SkenarioID,
+		&i.UnitID,
+		&i.Name,
+		&i.Kategori,
+		&i.Jumlah,
+		&i.RotX,
+		&i.RotY,
+		&i.RotZ,
+		&i.PosX,
+		&i.PosY,
+		&i.Keterangan,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Scale,
 	)
 	return i, err
 }

@@ -117,21 +117,23 @@ func (server *Server) setupRouter() {
 	adminGroup.PUT("/skenarios/:id", server.updateSkenarios)
 	adminGroup.DELETE("/skenarios/:id", server.deleteSkenarios)
 
-	adminGroup.POST("/markers", server.createMarkers)
-	adminGroup.PUT("/markers/geom/:id", server.updateMarkerGeom)
-	adminGroup.PUT("/markers/name/:id", server.updateMarkerName)
-	adminGroup.DELETE("/markers/:id", server.deleteMarkers)
-
-	adminGroup.POST("/buildings", server.createBuildings)
-	adminGroup.PUT("/buildings/:id", server.updateBuilding)
-	adminGroup.DELETE("/buildings/:id", server.deleteBuildings)
-
 	//categoryGroup := router.Group("/")
 
 	privateGroup := router.Group("/private").Use(authMiddleware(server.tokenMaker))
 	privateGroup.POST("/upload-image", server.uploadImage)
 	privateGroup.GET("/identify", server.getIdentify)
 	privateGroup.GET("/categories/all", server.allCategories)
+
+	privateGroup.POST("/markers", server.createMarkers)
+	privateGroup.PUT("/markers/geom/:id", server.updateMarkerGeom)
+	privateGroup.PUT("/markers/name/:id", server.updateMarkerName)
+	privateGroup.PUT("/markers/scale/:id", server.updateMarkerScale)
+	privateGroup.PUT("/markers/rotasi/:id", server.updateMarkerRotasi)
+	privateGroup.DELETE("/markers/:id", server.deleteMarkers)
+
+	privateGroup.POST("/buildings", server.createBuildings)
+	privateGroup.PUT("/buildings/:id", server.updateBuilding)
+	privateGroup.DELETE("/buildings/:id", server.deleteBuildings)
 
 	//apiGroup.POST("/users", server.createUser)
 

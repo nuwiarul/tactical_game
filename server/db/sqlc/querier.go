@@ -55,6 +55,8 @@ type Querier interface {
 	UpdateLastPositionRot(ctx context.Context, arg UpdateLastPositionRotParams) (LastPosition, error)
 	UpdateMarkerGeom(ctx context.Context, arg UpdateMarkerGeomParams) (Marker, error)
 	UpdateMarkerName(ctx context.Context, arg UpdateMarkerNameParams) (Marker, error)
+	UpdateMarkerRotasi(ctx context.Context, arg UpdateMarkerRotasiParams) (Marker, error)
+	UpdateMarkerScale(ctx context.Context, arg UpdateMarkerScaleParams) (Marker, error)
 	UpdateOperasi(ctx context.Context, arg UpdateOperasiParams) (Operasi, error)
 	UpdateSkenario(ctx context.Context, arg UpdateSkenarioParams) (Skenario, error)
 }

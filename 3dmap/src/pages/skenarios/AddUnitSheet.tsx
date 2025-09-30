@@ -1,4 +1,4 @@
-import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/components/ui/sheet.tsx";
+import {Sheet, SheetContent, SheetHeader, SheetTitle} from "@/components/ui/sheet.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
@@ -12,6 +12,7 @@ import {API_PATHS} from "@/utils/apiPaths.ts";
 import {consoleErrorApi} from "@/helpers/logs.ts";
 import type {IUnit} from "@/helpers/type.data.ts";
 import {toast} from "sonner";
+import {ScrollArea} from "@/components/ui/scroll-area.tsx";
 
 interface AddUnitSheetProps {
     open: boolean;
@@ -23,7 +24,7 @@ interface AddUnitSheetProps {
     addUnit: (unit: IUnit) => void;
 }
 
-const AddUnitSheet = ({open, posX, posY, skenarioId, operasiId, close, addUnit} : AddUnitSheetProps) => {
+const AddUnitSheet = ({open, posX, posY, skenarioId, operasiId, close, addUnit}: AddUnitSheetProps) => {
 
     const [units, setUnits] = useState<IBaseModel[]>([]);
     const [unit, setUnit] = useState<IBaseModel>();
@@ -31,7 +32,6 @@ const AddUnitSheet = ({open, posX, posY, skenarioId, operasiId, close, addUnit} 
     const [jumlah, setJumlah] = useState(1);
     const [keterangan, setKeterangan] = useState("");
     const [kategori, setKategori] = useState("");
-
 
 
     const onCreate = async () => {
@@ -51,7 +51,7 @@ const AddUnitSheet = ({open, posX, posY, skenarioId, operasiId, close, addUnit} 
         }
 
         try {
-            const response = await axiosInstance.post(API_PATHS.MARKERS.CREATE,{
+            const response = await axiosInstance.post(API_PATHS.MARKERS.CREATE, {
                 name: name,
                 jumlah: parseInt(jumlah.toString()),
                 keterangan: keterangan,
@@ -105,69 +105,69 @@ const AddUnitSheet = ({open, posX, posY, skenarioId, operasiId, close, addUnit} 
     }
 
     return (
-        <Sheet open={open} >
-            <SheetContent>
+        <Sheet open={open}>
+            <SheetContent className="[&>button:first-of-type]:hidden">
                 <SheetHeader>
-                    <SheetTitle className="mb-4">Add Unit</SheetTitle>
-                    <SheetDescription>
-                    </SheetDescription>
+                    <SheetTitle>Add Unit</SheetTitle>
                 </SheetHeader>
-                <div className="p-4 -mt-10 flex flex-col gap-8">
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="pos_x">Latitude</Label>
-                        <Input disabled type="text" id="pos_x" value={posX} />
+                <ScrollArea className="max-h-full">
+                    <div className="p-4 mb-25 flex flex-col gap-2">
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="pos_x">Latitude</Label>
+                            <Input disabled type="text" id="pos_x" value={posX}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="pos_y">Longitude</Label>
+                            <Input disabled type="text" id="pos_y" value={posY}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="kategori">Kategori</Label>
+                            <Select onValueChange={onKategoriChange}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Pilih Kategori"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="unit">Unit Polisi</SelectItem>
+                                    <SelectItem value="stackholder">Unit Stack Holder</SelectItem>
+                                    <SelectItem value="ranmor">Kendaran Bermotor</SelectItem>
+                                    <SelectItem value="people">Masyarakat</SelectItem>
+                                    <SelectItem value="alat">Peralatan</SelectItem>
+                                    <SelectItem value="bangunan">Bangunan</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="unit">Unit</Label>
+                            <Select onValueChange={onUnitChange}>
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Pilih Unit"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {units.map((unit) => (
+                                        <SelectItem key={unit?.id} value={unit?.id}>{unit?.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="nama">Nama</Label>
+                            <Input type="text" id="nama" value={name} onChange={(e) => setName(e.target.value)}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="jumlah">Jumlah</Label>
+                            <Input type="number" id="nama" value={jumlah}
+                                   onChange={(e) => setJumlah(parseInt(e.target.value))}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="keterangan">Keterangan</Label>
+                            <Textarea onChange={(e) => setKeterangan(e.target.value)} value={keterangan}/>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Button onClick={onCreate} className="cursor-pointer">Create</Button>
+                            <Button onClick={close} variant="destructive" className="cursor-pointer">Cancel</Button>
+                        </div>
                     </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="pos_y">Longitude</Label>
-                        <Input disabled type="text" id="pos_y" value={posY} />
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="kategori">Kategori</Label>
-                        <Select onValueChange={onKategoriChange}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Pilih Kategori" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="unit">Unit Polisi</SelectItem>
-                                <SelectItem value="stackholder">Unit Stack Holder</SelectItem>
-                                <SelectItem value="ranmor">Kendaran Bermotor</SelectItem>
-                                <SelectItem value="people">Masyarakat</SelectItem>
-                                <SelectItem value="alat">Peralatan</SelectItem>
-                                <SelectItem value="bangunan">Bangunan</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="unit">Unit</Label>
-                        <Select onValueChange={onUnitChange}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="Pilih Unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {units.map((unit) => (
-                                    <SelectItem key={unit?.id} value={unit?.id}>{unit?.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="nama">Nama</Label>
-                        <Input type="text" id="nama" value={name} onChange={(e) => setName(e.target.value)} />
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="jumlah">Jumlah</Label>
-                        <Input type="number" id="nama" value={jumlah} onChange={(e) => setJumlah(parseInt(e.target.value))} />
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="keterangan">Keterangan</Label>
-                        <Textarea onChange={(e) => setKeterangan(e.target.value)} value={keterangan} />
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Button onClick={onCreate}>Create</Button>
-                        <Button onClick={close}>Close</Button>
-                    </div>
-
-                </div>
+                </ScrollArea>
             </SheetContent>
         </Sheet>
     );

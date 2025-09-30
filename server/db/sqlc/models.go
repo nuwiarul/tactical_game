@@ -84,6 +84,7 @@ type Marker struct {
 	Keterangan pgtype.Text      `json:"keterangan"`
 	CreatedAt  pgtype.Timestamp `json:"created_at"`
 	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+	Scale      pgtype.Float8    `json:"scale"`
 }
 
 type Operasi struct {

@@ -6,6 +6,7 @@ import axiosInstance from "@/utils/axiosInstance.ts";
 import {API_PATHS} from "@/utils/apiPaths.ts";
 import {toast} from "sonner";
 import {consoleErrorApi} from "@/helpers/logs.ts";
+import {ScrollArea} from "@/components/ui/scroll-area.tsx";
 
 interface SkenarioSettingsSheetProps {
     open: boolean;
@@ -17,12 +18,12 @@ interface SkenarioSettingsSheetProps {
     close: () => void;
 }
 
-const SkenarioSettingsSheet = ({open, centerX, centerY, zoom, pitch, id, close} : SkenarioSettingsSheetProps) => {
+const SkenarioSettingsSheet = ({open, centerX, centerY, zoom, pitch, id, close}: SkenarioSettingsSheetProps) => {
 
 
     const onUpdate = async () => {
         try {
-            const response = await axiosInstance.put(API_PATHS.SKENARIOS.UPDATE(id),{
+            const response = await axiosInstance.put(API_PATHS.SKENARIOS.UPDATE(id), {
                 center_x: centerX,
                 center_y: centerY,
                 zoom: zoom,
@@ -38,39 +39,41 @@ const SkenarioSettingsSheet = ({open, centerX, centerY, zoom, pitch, id, close} 
     }
 
 
-
     return (
-        <Sheet open={open} >
-            <SheetContent>
+        <Sheet open={open}>
+            <SheetContent className="[&>button:first-of-type]:hidden">
+
                 <SheetHeader>
                     <SheetTitle className="mb-4">Map Settings</SheetTitle>
                     <SheetDescription>
 
                     </SheetDescription>
                 </SheetHeader>
-                <div className="p-4 -mt-10 flex flex-col gap-8">
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="center_x">Titik Tengah Latitude</Label>
-                        <Input disabled type="text" id="center_x" value={centerX} />
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="center_y">Titik Tengah Longitude</Label>
-                        <Input disabled type="text" id="center_y" value={centerY} />
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="zoom">Zoom</Label>
-                        <Input disabled type="text" id="zoom" value={zoom} />
-                    </div>
-                    <div className="grid w-full items-center gap-3">
-                        <Label htmlFor="pitch">Pitch</Label>
-                        <Input disabled type="text" id="pitch" value={pitch} />
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Button onClick={onUpdate}>Save</Button>
-                        <Button onClick={close}>Close</Button>
-                    </div>
+                <ScrollArea className="max-h-full">
+                    <div className="p-4 mb-25 flex flex-col gap-8">
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="center_x">Titik Tengah Latitude</Label>
+                            <Input disabled type="text" id="center_x" value={centerX}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="center_y">Titik Tengah Longitude</Label>
+                            <Input disabled type="text" id="center_y" value={centerY}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="zoom">Zoom</Label>
+                            <Input disabled type="text" id="zoom" value={zoom}/>
+                        </div>
+                        <div className="grid w-full items-center gap-3">
+                            <Label htmlFor="pitch">Pitch</Label>
+                            <Input disabled type="text" id="pitch" value={pitch}/>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <Button onClick={onUpdate}>Save</Button>
+                            <Button onClick={close} variant="destructive">Cancel</Button>
+                        </div>
 
-                </div>
+                    </div>
+                </ScrollArea>
             </SheetContent>
         </Sheet>
     );
