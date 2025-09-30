@@ -1,8 +1,20 @@
-import {GLTFLayer, GLTFMarker} from "maptalks-gl";
+import {GLTFLayer, GLTFMarker, Polygon} from "maptalks-gl";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import type {ModelControl} from "@/lib/modelcontrol";
-import {type IBaseChildModel, type IBaseModel, KENDARAANS, PEOPLES, STACKHOLDERS, TOOLS, UNITS} from "@/utils/items.ts";
+import {
+    BANGUNANS,
+    type IBaseChildModel,
+    type IBaseModel,
+    KENDARAANS,
+    PEOPLES,
+    STACKHOLDERS,
+    TOOLS,
+    UNITS
+} from "@/utils/items.ts";
+import type {ThreeLayer} from "maptalks.three";
+import * as THREE from 'three';
+import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
 
 export interface IObjectProperties {
     id: string;
@@ -14,6 +26,12 @@ export interface IObjectProperties {
     icon?: GLTFMarker;
     child?: GLTFMarker;
     space?: number;
+}
+
+export interface IBuildingProperties {
+    id: string;
+    keterangan: string;
+    name: string;
 }
 
 export const createBaseObject = (
@@ -142,9 +160,12 @@ export const createBaseObject = (
         }});
     }
 
-    gltfMarker.setMenu({
-        items: menus
-    });
+    if (menus.length > 0) {
+        gltfMarker.setMenu({
+            items: menus
+        });
+    }
+
 
     if (icon) {
         const iconMarker = new GLTFMarker([center[0], center[1], gltfMarker.getModelHeight()], {
@@ -308,6 +329,8 @@ export const getUnit = (kategori: string, id: string) => {
         units = PEOPLES
     } else if (kategori === 'alat') {
         units = TOOLS
+    } else if (kategori === 'bangunan') {
+        units = BANGUNANS
     }
 
     for (let i = 0; i < units.length; i++) {
@@ -318,4 +341,113 @@ export const getUnit = (kategori: string, id: string) => {
     }
 
     return null;
+}
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+const addBuildingContextMenu = (e, editProperties: () => void,
+                                deleteObject: () => void, ) => {
+    e.domEvent.preventDefault();
+
+
+    const existingMenu = document.getElementById('model-context-menu');
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+
+    const building = e.target as ExtrudePolygon;
+    const contextMenu = document.createElement('div');
+    contextMenu.id = 'model-context-menu';
+    contextMenu.className = 'model-context-menu';
+    contextMenu.style.left = e.domEvent.clientX + 'px';
+    contextMenu.style.top = e.domEvent.clientY + 'px';
+    const contextMenuTitle = document.createElement('span');
+    const properties = building.getProperties() as IBuildingProperties;
+    contextMenuTitle.innerHTML = properties.name;
+    const contextMenuUl = document.createElement('ul');
+    const contextMenuActionEdit = document.createElement('li');
+    contextMenuActionEdit.innerHTML = 'Edit Keterangan';
+    const contextMenuActionDelete = document.createElement('li');
+    contextMenuActionDelete.innerHTML = 'Hapus';
+    contextMenuUl.appendChild(contextMenuActionEdit);
+    contextMenuUl.appendChild(contextMenuActionDelete);
+    contextMenu.appendChild(contextMenuTitle);
+    contextMenu.appendChild(contextMenuUl);
+
+
+    contextMenuActionEdit.addEventListener('click', (e) => {
+        e.preventDefault();
+        editProperties()
+        contextMenu.remove();
+    })
+
+    contextMenuActionDelete.addEventListener('click', (e) => {
+        e.preventDefault();
+        contextMenu.remove();
+        deleteObject();
+    })
+
+
+    document.body.appendChild(contextMenu);
+
+}
+
+export const createBuilding = (layer: ThreeLayer, {
+    id, name, keterangan, editProperties, deleteObject, height, coordinates, callbackinfo, color
+}: {
+    id: string,
+    name: string,
+    keterangan: string,
+    height: number,
+    color: string,
+    coordinates: [],
+    editProperties?: (id: string, name: string, keterangan: string, height: number, colot: string, building: ExtrudePolygon) => void,
+    deleteObject?: (id: string, building: ExtrudePolygon) => void,
+    callbackinfo?: (id: string, command: string) => void,
+}) => {
+
+
+    const polygon = new Polygon(coordinates);
+
+    const material = new THREE.MeshPhongMaterial({ color: color });
+    const mesh = layer.toExtrudePolygon(polygon, {height: height, topColor: color}, material);
+    layer.addMesh(mesh);
+    const properties: IBuildingProperties = {
+        name: name,
+        id: id,
+        keterangan: keterangan,
+    }
+    mesh.setProperties(properties);
+    mesh.setInfoWindow({
+        title: `<span style="color: grey;">${name}<span>`,
+        content: `<span style="color: grey;">${keterangan}<span>`,
+    });
+
+    mesh.getInfoWindow().on("showend hide", (e) => {
+        if (callbackinfo) {
+            if (e) {
+                if (e.type === "showend") {
+                    callbackinfo(id, "SHOWINFO");
+                } else if (e.type === "hide") {
+                    callbackinfo(id, "HIDEINFO");
+                }
+            }
+        }
+    });
+
+    if (editProperties && deleteObject) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        mesh.on('contextmenu', function (e) {
+            addBuildingContextMenu(e,  () => {
+                editProperties(id, name, keterangan, height, color, mesh);
+            },  () => {
+                deleteObject(id, mesh)
+            });
+        })
+    }
+
+    return mesh
+
+
 }

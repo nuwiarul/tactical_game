@@ -5,7 +5,7 @@ import {
     createCompassControl, createGroupGltfLayer,
     createMap, createMapEventModelControl,
     createSatelliteLayer,
-    createStreetLayer, getGltfLayerWithGroup
+    createStreetLayer, createThreeLayer, getGltfLayerWithGroup
 } from "@/helpers/maps.ts";
 import {config} from "@/utils/constants.ts";
 import {useParams} from "react-router-dom";
@@ -22,6 +22,9 @@ import MainLayout from "@/layouts/MainLayout.tsx";
 import {ModelControl} from "@/lib/modelcontrol";
 import {createModelControl} from "@/helpers/controls.ts";
 import {toast} from "sonner";
+import {removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
+import type {ThreeLayer} from "maptalks.three";
+import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
 
 
 
@@ -35,6 +38,8 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
     const skenarioIdInstance = useRef("");
     const lastCommandInstance = useRef("");
     const markerInstance = useRef<GLTFMarker[]>([])
+    const threeLayerInstance = useRef<ThreeLayer>(null);
+    const buildingInstance = useRef<ExtrudePolygon[]>([]);
 
     const {operasi_id, skenario_id} = useParams();
 
@@ -44,22 +49,12 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
     const [shareTitle, setShareTitle] = useState("");
 
     const removeGltfMarkers = (id: string) => {
-        if (mapInstance.current) {
 
-            markerInstance.current.forEach(marker => {
-                const properties = marker.getProperties() as IObjectProperties;
-                if (properties.icon) {
-                    properties.icon.remove();
-                }
-                if (properties.child) {
-                    properties.child.remove();
-                }
-                marker.remove();
-
-            });
-
+        const callbackRemoveGltf=  () => {
             getMarkers(id);
         }
+        removeGltfMarkersHelper(mapInstance.current!, markerInstance.current, callbackRemoveGltf)
+
     }
 
     const reloadMarkers = (listUnits: IUnit[]) => {
@@ -81,13 +76,14 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                             unit_id: item.unit_id,
                             name: item.name,
                             icon: baseModel.icon,
-                            description: `Jumlah ${item.jumlah}<br/>${item.keterangan}`,
+                            description: `${item.kategori !== "bangunan" ? `Jumlah ${item.jumlah}<br/>` : "" }${item.keterangan}`,
                             child: baseModel.child,
                             keterangan: item.keterangan,
                             jumlah: item.jumlah,
                             callbackinfo: callbackInfoWindow,
                             dragable: true,
-                            callbackdrag: callbackDrag
+                            callbackdrag: callbackDrag,
+                            isMove: item.kategori !== "bangunan",
 
                         })
                         units.push(unit)
@@ -101,6 +97,8 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
     const callbackInfoWindow = (id: string, command: string) => {
         publish(command, JSON.stringify({command: command, marker_id: id}), operasi_id as string, skenarioIdInstance.current, id, isRecord);
     }
+
+
 
     const callbackDrag = (id: string, command: string, data: string) => {
         callbackModelControl(id, command, data);
@@ -137,7 +135,7 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
 
             const gltfLayer = new GLTFLayer('gltf');
             const iconlayer = new GLTFLayer('icon');
-            createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]);
+            const groupGlLayer = createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]);
 
             const menus = [{
                 item: 'List Skenario',
@@ -187,6 +185,21 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
             createMapEventModelControl(mapInstance.current, modelControlInstance.current);
             isFirst.current = true;
             removeGltfMarkers(skenario_id as string);
+
+            //reload building
+            threeLayerInstance.current = createThreeLayer();
+            groupGlLayer.addLayer(threeLayerInstance.current);
+
+            removeBuildings(
+                skenario_id as string,
+                mapInstance.current as Map,
+                threeLayerInstance.current as ThreeLayer,
+                buildingInstance.current,
+                callbackRemoveBuilding,
+                callbackInfoWindowBuilding
+                );
+
+
             mapInstance.current.on('moveend zoomend pitchend', (param) => {
                 if (param) {
                     const center = mapInstance?.current?.getCenter();
@@ -198,6 +211,15 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
             });
             publish("RELOAD", JSON.stringify({reload: true}), operasi_id as string, skenario_id as string, "reload", 0)
         }
+    }
+
+    const callbackInfoWindowBuilding = (id: string, command: string) => {
+        console.log(command)
+        publish(`${command}_BUIlDING`, JSON.stringify({command: command, building_id: id}), operasi_id as string, skenarioIdInstance.current, id, isRecord);
+    }
+
+    const callbackRemoveBuilding = (buildings: ExtrudePolygon[])=> {
+        buildingInstance.current = buildings;
     }
 
     const callbackLayerSwitcher = (layer: string) => {
@@ -231,6 +253,14 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                 mapInstance.current.addControl(textPanel.current);
             }
             removeGltfMarkers(id);
+            removeBuildings(
+                id,
+                mapInstance.current as Map,
+                threeLayerInstance.current as ThreeLayer,
+                buildingInstance.current,
+                callbackRemoveBuilding,
+                callbackInfoWindowBuilding
+            );
         }
     }
 

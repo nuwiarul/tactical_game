@@ -33,11 +33,11 @@ const ListGame = ({isRecord} : {isRecord: number}) => {
                     {title: "Dashboard", href: "/admin", icon: Home},
                     {title: isRecord ? "Tactical Games" : "Latihan", href: "#", icon: isRecord ? Map : Joystick},
                 ]}/>
-                <div className="grid grid-cols-3 gap-4 mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-4">
                     {rows.map((row) => (
                         <Card key={row.operasi_id} className="p-4 hover:scale-[1.02] transition">
                             <h3 className="text-lg font-semibold mb-2">{row.name}</h3>
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                                 {row.skenario.map((skenario) => (
                                     <Link key={skenario.skenario_id} to={`/${isRecord ? "game" : "latihan"}/${row.operasi_id}/${skenario.skenario_id}`} className="cursor-pointer border px-2 py-1 rounded-lg">
                                         {skenario.name}

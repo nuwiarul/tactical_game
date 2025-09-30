@@ -50,7 +50,7 @@ const Navbar = ({isPublic = false, isOperasi = false, title, share}:
             {title && (<div className="flex items-center gap-2">
                 {share && (
                     <Popover>
-                        <PopoverTrigger><Share2/></PopoverTrigger>
+                        <PopoverTrigger><Share2 size={20}/></PopoverTrigger>
                         <PopoverContent>
                             <div className="flex items-center gap-2">
                                 <WhatsappShareButton
@@ -76,7 +76,7 @@ const Navbar = ({isPublic = false, isOperasi = false, title, share}:
                                 >
                                     <EmailIcon size={32} round/>
                                 </EmailShareButton>
-                                <Button className="rounded-full" size="sm" onClick={async () => {
+                                <Button className="rounded-full w-8 h-8" onClick={async () => {
                                     try {
                                         await navigator.clipboard.writeText(share.url);
                                         toast.success("Url berhasil di copy")
@@ -84,7 +84,7 @@ const Navbar = ({isPublic = false, isOperasi = false, title, share}:
                                         consoleErrorApi(error, "Copy to clipboard");
                                     }
                                 }}>
-                                    <Copy size={16}/>
+                                    <Copy size={12}/>
                                 </Button>
                             </div>
                         </PopoverContent>

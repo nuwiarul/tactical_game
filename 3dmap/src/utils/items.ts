@@ -42,7 +42,7 @@ export const UNITS: IBaseModel[] = [
     {
         id: "378c8b26-7303-4d43-b630-605e56af855c",
         name: "Polisi K9",
-        height: 8,
+        height: 10,
         rotation: {
             x : 0,
             y : 0,
@@ -581,4 +581,103 @@ export const TOOLS: IBaseModel[] = [
         modelUrl: "/kawat_berduri.glb",
         animation: false,
     },
+]
+
+export const BANGUNANS: IBaseModel[] = [
+    {
+        id: "6d2a14f4-039a-4438-9526-3832de19e6d7",
+        name: "Kantor Polisi",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/kantor_polisi.glb",
+        animation: false,
+    },
+    {
+        id: "d02121e6-7a1e-49e3-9571-04b33c94a27b",
+        name: "Kantor Pemerintah",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/kantor_pemerintah.glb",
+        animation: false,
+    },
+    {
+        id: "7e5e3b3b-9b85-4703-b461-5850f360207d",
+        name: "Bank",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 180,
+        },
+        modelUrl: "/kantor_bank.glb",
+        animation: false,
+    },
+    {
+        id: "cc7847ff-d86b-4286-b273-059f7a3fece0",
+        name: "Rumah Sakit",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : -90,
+        },
+        modelUrl: "/rumah_sakit.glb",
+        animation: false,
+    },
+    {
+        id: "e9f77a3d-5fb9-44df-b0f7-0958535c5e19",
+        name: "Rumah",
+        height: 35,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 180,
+        },
+        modelUrl: "/rumah.glb",
+        animation: false,
+    },
+    {
+        id: "1325beab-f7cb-4b62-9d6f-d8e255a8f8a5",
+        name: "Pos Polisi",
+        height: 30,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 180,
+        },
+        modelUrl: "/pos_polisi.glb",
+        animation: false,
+    },
+    {
+        id: "68ad0a79-160b-4747-978a-f5b2b2b8c352",
+        name: "Hotel",
+        height: 100,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/hotel.glb",
+        animation: false,
+    },
+    {
+        id: "fc54c3eb-fc1e-4f97-a420-053b607a43e3",
+        name: "Gedung",
+        height: 100,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 180,
+        },
+        modelUrl: "/gedung_biasa.glb",
+        animation: false,
+    }
 ]

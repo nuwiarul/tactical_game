@@ -3,7 +3,7 @@ import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {useState} from "react";
-import {type IBaseModel, KENDARAANS, PEOPLES, STACKHOLDERS, TOOLS, UNITS} from "@/utils/items.ts";
+import {BANGUNANS, type IBaseModel, KENDARAANS, PEOPLES, STACKHOLDERS, TOOLS, UNITS} from "@/utils/items.ts";
 import {Select, SelectContent, SelectItem, SelectValue} from "@/components/ui/select";
 import {SelectTrigger} from "@/components/ui/select.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
@@ -86,6 +86,8 @@ const AddUnitSheet = ({open, posX, posY, skenarioId, operasiId, close, addUnit} 
             setUnits(PEOPLES);
         } else if (value === 'alat') {
             setUnits(TOOLS);
+        } else if (value === 'bangunan') {
+            setUnits(BANGUNANS);
         }
 
         setKategori(value);
@@ -131,6 +133,7 @@ const AddUnitSheet = ({open, posX, posY, skenarioId, operasiId, close, addUnit} 
                                 <SelectItem value="ranmor">Kendaran Bermotor</SelectItem>
                                 <SelectItem value="people">Masyarakat</SelectItem>
                                 <SelectItem value="alat">Peralatan</SelectItem>
+                                <SelectItem value="bangunan">Bangunan</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

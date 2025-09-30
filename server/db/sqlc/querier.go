@@ -16,6 +16,7 @@ type Querier interface {
 	CountOperasis(ctx context.Context) (int64, error)
 	CountSearchCategories(ctx context.Context, name string) (int64, error)
 	CountSearchOperasis(ctx context.Context, name string) (int64, error)
+	CreateBuilding(ctx context.Context, arg CreateBuildingParams) (Building, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateCommand(ctx context.Context, arg CreateCommandParams) (Command, error)
 	CreateLastMap(ctx context.Context, arg CreateLastMapParams) (LastMap, error)
@@ -24,6 +25,7 @@ type Querier interface {
 	CreateOperasi(ctx context.Context, name pgtype.Text) (Operasi, error)
 	CreateSkenario(ctx context.Context, arg CreateSkenarioParams) (Skenario, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteBuilding(ctx context.Context, id uuid.UUID) error
 	DeleteCategories(ctx context.Context, id uuid.UUID) error
 	DeleteMarkers(ctx context.Context, id uuid.UUID) error
 	DeleteOperasis(ctx context.Context, id uuid.UUID) error
@@ -32,6 +34,7 @@ type Querier interface {
 	GetMarker(ctx context.Context, id uuid.UUID) (GetMarkerRow, error)
 	GetOperasis(ctx context.Context, id uuid.UUID) (Operasi, error)
 	GetSkenarios(ctx context.Context, id uuid.UUID) (GetSkenariosRow, error)
+	ListBuildingsBySkenario(ctx context.Context, skenarioID pgtype.UUID) ([]ListBuildingsBySkenarioRow, error)
 	ListCategories(ctx context.Context) ([]Category, error)
 	ListCommandsBySkenario(ctx context.Context, skenarioID pgtype.UUID) ([]Command, error)
 	ListLastMapsBySkenario(ctx context.Context, skenarioID pgtype.UUID) ([]ListLastMapsBySkenarioRow, error)
@@ -45,6 +48,7 @@ type Querier interface {
 	PaginateSearchCategories(ctx context.Context, arg PaginateSearchCategoriesParams) ([]Category, error)
 	PaginateSearchOperasis(ctx context.Context, arg PaginateSearchOperasisParams) ([]Operasi, error)
 	SelectUsers(ctx context.Context, username pgtype.Text) (SelectUsersRow, error)
+	UpdateBuilding(ctx context.Context, arg UpdateBuildingParams) (Building, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateLastMaps(ctx context.Context, arg UpdateLastMapsParams) (LastMap, error)
 	UpdateLastPositionMove(ctx context.Context, arg UpdateLastPositionMoveParams) (LastPosition, error)

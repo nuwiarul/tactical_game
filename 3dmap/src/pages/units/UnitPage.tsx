@@ -10,9 +10,18 @@ import {Canvas, useThree} from "@react-three/fiber";
 import {type ReactNode, Suspense, useEffect, useState} from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {Button} from "@/components/ui/button.tsx";
-import {type IBaseModel, KENDARAANS, PEOPLES, STACKHOLDERS, TOOLS, UNITS} from "@/utils/items.ts";
+import {BANGUNANS, type IBaseModel, KENDARAANS, PEOPLES, STACKHOLDERS, TOOLS, UNITS} from "@/utils/items.ts";
 import MainLayout from "@/layouts/MainLayout";
-import {Home, PersonStanding} from "lucide-react";
+import {
+    Building2,
+    Car,
+    Home,
+    PersonStanding,
+    Siren,
+    SquareUser,
+    TrafficCone,
+    Users
+} from "lucide-react";
 import {DataTableUnit} from "@/pages/units/DataTableUnit.tsx";
 import AppBreadcum from "@/components/AppBreadcum.tsx";
 
@@ -66,7 +75,7 @@ const UnitPage = () => {
     const [units, setUnits] = useState<IBaseModel[]>(UNITS);
     const [unit, setUnit] = useState("unit");
 
-    const classActive = "py-2 px-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 bg-white";
+    const classActive = "py-2 px-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600";
     const classTab = "py-2 px-4 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 cursor-pointer";
 
     const handleZoom = (valUrl: string, valName: string) => {
@@ -91,6 +100,8 @@ const UnitPage = () => {
             setUnits(PEOPLES);
         } else if (value === "tool") {
             setUnits(TOOLS);
+        } else if (value === "bangunan") {
+            setUnits(BANGUNANS);
         }
     }
 
@@ -107,25 +118,48 @@ const UnitPage = () => {
                     <div className="flex border-b border-gray-200">
                         <button onClick={() => handleTabChange("unit")}
                             className={unit === "unit" ? classActive : classTab}>
-                            Unit Polisi
+                            <div className="flex items-center gap-1 justify-center">
+                                <Siren/>
+                                <span className="hidden lg:block">Unit</span>
+                            </div>
+
                         </button>
 
                         <button onClick={() => handleTabChange("stackholder")}
                             className={unit === "stackholder" ? classActive : classTab}>
-                            Stack Holder
+                            <div className="flex items-center gap-1 justify-center">
+                                <SquareUser/>
+                                <span className="hidden lg:block">Stack Holder</span>
+                            </div>
                         </button>
 
                         <button onClick={() => handleTabChange("ranmor")}
                             className={unit === "ranmor" ? classActive : classTab}>
-                            Ranmor
+                            <div className="flex items-center gap-1 justify-center">
+                                <Car/>
+                                <span className="hidden lg:block">Ranmor</span>
+                            </div>
                         </button>
                         <button onClick={() => handleTabChange("people")}
                             className={unit === "people" ? classActive : classTab}>
-                            Masyarakat
+                            <div className="flex items-center gap-1 justify-center">
+                                <Users/>
+                                <span className="hidden lg:block">Masyarakat</span>
+                            </div>
                         </button>
                         <button onClick={() => handleTabChange("tool")}
                             className={unit === "tool" ? classActive : classTab}>
-                            Perlengkapan
+                            <div className="flex items-center gap-1 justify-center">
+                                <TrafficCone/>
+                                <span className="hidden lg:block">Perlengkapan</span>
+                            </div>
+                        </button>
+                        <button onClick={() => handleTabChange("bangunan")}
+                                className={unit === "bangunan" ? classActive : classTab}>
+                            <div className="flex items-center gap-1 justify-center">
+                                <Building2/>
+                                <span className="hidden lg:block">Bangunan</span>
+                            </div>
                         </button>
                     </div>
                 </div>

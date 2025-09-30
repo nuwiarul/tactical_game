@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {Map, control, DrawTool, GLTFLayer, GLTFMarker} from "maptalks-gl";
+import {Map, control, DrawTool, GLTFLayer, GLTFMarker, type GroupGLLayer} from "maptalks-gl";
 import 'maptalks-gl/dist/maptalks-gl.css';
 import '@maptalks/transcoders.draco';
 import {useParams} from "react-router-dom";
@@ -13,12 +13,12 @@ import {
     createCompassControl, createGroupGltfLayer,
     createMap, createMapEventModelControl,
     createSatelliteLayer,
-    createStreetLayer, getGltfLayerWithGroup
+    createStreetLayer, createThreeLayer, getGltfLayerWithGroup
 } from "@/helpers/maps.ts";
 import SkenarioSettingsSheet from "@/pages/skenarios/SkenarioSettingsSheet.tsx";
 import AddUnitSheet from "@/pages/skenarios/AddUnitSheet.tsx";
-import type {IUnit} from "@/helpers/type.data.ts";
-import {createBaseObject, getUnit} from "@/helpers/objects.ts";
+import type {IBuilding, IUnit} from "@/helpers/type.data.ts";
+import {createBaseObject, createBuilding, getUnit, type IBuildingProperties} from "@/helpers/objects.ts";
 import {createModelControl} from "@/helpers/controls.ts";
 import EditGeomSheet from "@/pages/skenarios/EditGeomSheet.tsx";
 import EditPropertiesSheet from "@/pages/skenarios/EditPropertiesSheet.tsx";
@@ -26,6 +26,13 @@ import {toast} from "sonner";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 import {ModelControl} from '@/lib/modelcontrol.js';
+import type {ThreeLayer} from "maptalks.three";
+import "./index.css";
+import AddBuildingSheet from "@/pages/skenarios/AddBuildingSheet.tsx";
+import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
+import EditBuildingPropertiesSheet from "@/pages/skenarios/EditBuildingPropertiesSheet.tsx";
+import * as THREE from "three";
+import {getBuildings} from "@/helpers/games.ts";
 
 const SkenarioPlotPage = () => {
 
@@ -34,6 +41,8 @@ const SkenarioPlotPage = () => {
     const initialized = useRef(false);
     const drawToolInstance = useRef<DrawTool | null>(null);
     const modelControlInstance = useRef<ModelControl | null>(null);
+    const threeLayerInstance = useRef<ThreeLayer>(null);
+    const contextMenuRef = useRef<HTMLDivElement | null>(null);
 
     const {id} = useParams();
 
@@ -59,9 +68,27 @@ const SkenarioPlotPage = () => {
     const [currentUnit, setCurrentUnit] = useState<GLTFMarker>(null);
     const [shareUrl, setShareUrl] = useState("");
     const [shareTitle, setShareTitle] = useState("");
+    const [openAddBuilding, setOpenAddBuilding] = useState(false);
+    const [buildingGeom, setBuildingGeom] = useState("");
+
+    const [currentBuilding, setCurrentBuilding] = useState<ExtrudePolygon | null>(null);
+    const [buildingName, setBuildingName] = useState("");
+    const [buildingColor, setBuildingColor] = useState("");
+    const [buildingKetarangan, setBuildingKetarangan] = useState("")
+    const [buildingHeight, setBuildingHeight] = useState(0);
+    const [buildingId, setBuildingId] = useState("");
+    const [openUpdateBuilding, setOpenUpdateBuilding] = useState(false);
 
     const initMap = (valName: string, valOperasiName: string, valOperasiId: string, valCenterX:number, valCenterY: number, valZoom: number, valPitch: number) => {
         if (!initialized.current && mapRef.current) {
+
+            document.addEventListener('click', (e) => {
+                const contextMenu = document.getElementById('model-context-menu');
+                if (contextMenu && !contextMenu.contains(e.target as Node)) {
+                    contextMenu.remove();
+                }
+            });
+
             initialized.current = true;
             const streetLayer = createStreetLayer();
             const satelliteLayer = createSatelliteLayer();
@@ -115,9 +142,16 @@ const SkenarioPlotPage = () => {
             drawToolInstance.current?.on('drawend', function (param) {
                 console.log(param);
                 if (param) {
-                    setPosX(param.coordinate.x);
-                    setPosY(param.coordinate.y);
-                    setOpenAddUnit(true);
+                    if (param.geometry.type === 'Point') {
+                        setPosX(param.coordinate.x);
+                        setPosY(param.coordinate.y);
+                        setOpenAddUnit(true);
+                    } else if (param.geometry.type === 'Polygon') {
+                        console.log(param.geometry.getCoordinates())
+                        setBuildingGeom(JSON.stringify(param.geometry.getCoordinates()));
+                        setOpenAddBuilding(true);
+                    }
+
                 }
 
                 drawToolInstance.current?.disable();
@@ -129,25 +163,46 @@ const SkenarioPlotPage = () => {
                 'items': [{
                     item: 'Buat Unit',
                     click: function () {
-                        drawToolInstance.current?.enable();
+                        drawToolInstance.current?.setMode('Point').enable();
+                        //drawToolInstance.current?.enable();
+                    }
+                }, {
+                    item: 'Buat Gedung',
+                    click: function () {
+                        drawToolInstance.current?.setMode('Polygon').enable();
+                        //drawToolInstance.current?.enable();
+                    }
+                }, {
+                    item: 'Cancel',
+                    click: function () {
+                        drawToolInstance.current?.disable();
                     }
                 }]
             }).addTo(mapInstance.current);
 
             const gltfLayer = new GLTFLayer('gltf');
             const iconlayer = new GLTFLayer('icon');
-            createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]);
+            const groupGlLayer = createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]) as GroupGLLayer;
             modelControlInstance.current = createModelControl(mapInstance.current);
             createMapEventModelControl(mapInstance.current, modelControlInstance.current);
-            getMarkers();
             setShareUrl(`https://twg.jagradewata.id/preview/${valOperasiId as string}/${id}`);
             setShareTitle(`${valOperasiName} - ${valName}`)
 
-            //Create Three Group
-
-
+            threeLayerInstance.current = createThreeLayer();
+            groupGlLayer.addLayer(threeLayerInstance.current);
+            getMarkers();
+            getBuildings(id as string,
+                mapInstance.current as Map,
+                threeLayerInstance.current as ThreeLayer,
+                (buildings: ExtrudePolygon[]) => {console.log(buildings)},
+                (id: string, command: string) => {console.log(command); console.log(id)},
+                editPropertiesBuilding,
+                deleteBuilding
+            );
         }
     }
+
+
 
     const reloadMarkers = (listUnits: IUnit[]) => {
         if (mapInstance.current) {
@@ -168,7 +223,7 @@ const SkenarioPlotPage = () => {
                             unit_id: item.unit_id,
                             name: item.name,
                             icon: baseModel.icon,
-                            description: `Jumlah ${item.jumlah}<br/>${item.keterangan}`,
+                            description: `${item.kategori !== "bangunan" ? `Jumlah ${item.jumlah}<br/>` : "" }${item.keterangan}`,
                             child: baseModel.child,
                             keterangan: item.keterangan,
                             jumlah: item.jumlah,
@@ -182,6 +237,30 @@ const SkenarioPlotPage = () => {
         }
     }
 
+    /*
+    const reloadbuildings = (listBuildings: IBuilding[]) => {
+        if (mapInstance.current) {
+
+            if (threeLayerInstance.current) {
+
+                listBuildings.forEach((item) => {
+                    createBuilding(threeLayerInstance.current as ThreeLayer, {
+                        height: item.height,
+                        id: item.id,
+                        color: item.color,
+                        name: item.name,
+                        coordinates: JSON.parse(item.geom),
+                        keterangan: item.keterangan,
+                        editProperties: editPropertiesBuilding,
+                        deleteObject: deleteBuilding,
+                    });
+                })
+            }
+        }
+    }
+
+     */
+
     const getMarkers = async () => {
         try {
             const response = await axiosInstance.get(API_PATHS.MARKERS.LIST(id as string))
@@ -192,23 +271,23 @@ const SkenarioPlotPage = () => {
             consoleErrorApi(error, "Unit");
         }
     }
-
-   /* const reloadMap = (valName: string, valOperasiName: string, valOperasiId: string, valCenterX:number, valCenterY: number, valZoom: number, valPitch: number) => {
-        if (mapInstance.current) {
-            mapInstance.current.flyTo({
-                zoom : valZoom,
-                center : [valCenterX, valCenterY],
-                pitch : valPitch,
-            }, {
-                duration : 1000,
-                easing : 'out'
-            }, function(frame) {
-                if (frame.state.playState === 'finished') {
-                    console.log('animation finished');
-                }
-            });
+    /*
+    const getBuildings = async (id: string) => {
+        try {
+            const response = await axiosInstance.get(API_PATHS.BUILDINGS.LIST(id))
+            if (response.data.data) {
+                //reloadbuildings(response.data.data)
+                reloadBuildings(mapInstance.current as Map, threeLayerInstance.current as ThreeLayer, response.data.data, {
+                    editProperties: editPropertiesBuilding,
+                    deleteObject: deleteBuilding,
+                });
+            }
+        } catch (error) {
+            consoleErrorApi(error, "Building");
         }
-    }*/
+    }
+
+     */
 
 
     const getSkenario = async (id: string | undefined) => {
@@ -278,6 +357,29 @@ const SkenarioPlotPage = () => {
         }
     }
 
+    const editPropertiesBuilding = (id: string, name: string, keterangan: string, height: number, color: string, mesh: ExtrudePolygon) => {
+        setBuildingId(id)
+        setBuildingColor(color)
+        setBuildingName(name)
+        setBuildingKetarangan(keterangan)
+        setCurrentBuilding(mesh)
+        setBuildingHeight(height)
+        setOpenUpdateBuilding(true);
+    }
+
+    const deleteBuilding = async (id: string, mesh: ExtrudePolygon) => {
+        const confirm = window.confirm("Yakin ingin menghapus building ini?");
+        if (confirm) {
+            try {
+                await axiosInstance.delete(API_PATHS.BUILDINGS.DELETE(id as string))
+                mesh.remove();
+                toast.success("Building berhasil dihapus");
+            } catch (error) {
+                consoleErrorApi(error, "Delete Building");
+            }
+        }
+    }
+
     const handleAddUnit = (addUnit: IUnit) => {
         setOpenAddUnit(false);
         if (mapInstance.current) {
@@ -309,6 +411,25 @@ const SkenarioPlotPage = () => {
         }
     }
 
+    const handleAddBuilding = (addBuilding: IBuilding) => {
+        setOpenAddBuilding(false);
+        if (mapInstance.current) {
+            if (threeLayerInstance.current) {
+                createBuilding(threeLayerInstance.current as ThreeLayer, {
+                    height: addBuilding.height,
+                    id: addBuilding.id,
+                    color: addBuilding.color,
+                    name: addBuilding.name,
+                    coordinates: JSON.parse(addBuilding.geom),
+                    keterangan: addBuilding.keterangan,
+                    editProperties: editPropertiesBuilding,
+                    deleteObject: deleteBuilding,
+                });
+            }
+
+        }
+    }
+
     const handleUpdatePropertiesUnit = (name: string, jumlah: number, keterangan: string) => {
         setOpenEditProperties(false);
         if (currentUnit) {
@@ -317,6 +438,30 @@ const SkenarioPlotPage = () => {
                 title: `<span style="color: grey;">${name}<span>`,
                 content: `<span style="color: grey;">Jumlah ${jumlah}<br/>${keterangan}<span>`,
             });
+        }
+    }
+
+    const handleUpdatePropertiesBuilding = (name: string, height: number, keterangan: string, color: string) => {
+        setOpenUpdateBuilding(false);
+        if (currentBuilding) {
+            currentBuilding.removeInfoWindow();
+            currentBuilding.setInfoWindow({
+                title: `<span style="color: grey;">${name}<span>`,
+                content: `<span style="color: grey;">${keterangan}<span>`,
+            });
+            currentBuilding.setHeight(height);
+            const material = new THREE.MeshPhongMaterial({ color: color });
+            currentBuilding.setSymbol(material);
+            const properties = currentBuilding.getProperties() as IBuildingProperties;
+            properties.name = name;
+            properties.keterangan = keterangan;
+            currentBuilding.setProperties(properties);
+            setBuildingId("")
+            setBuildingColor("")
+            setBuildingName("")
+            setBuildingKetarangan("")
+            setCurrentBuilding(null)
+            setBuildingHeight(0)
         }
     }
 
@@ -341,6 +486,14 @@ const SkenarioPlotPage = () => {
                 operasiId={operasiId} close={() => setOpenAddUnit(false)}
                 addUnit={handleAddUnit}
             />
+            <AddBuildingSheet
+                open={openAddBuilding}
+                geom={buildingGeom}
+                skenarioId={id as string}
+                operasiId={operasiId}
+                close={() => setOpenAddBuilding(false)}
+                addBuilding={handleAddBuilding}
+            />
             <EditGeomSheet
                 open={openEditGeom}
                 posX={posX}
@@ -363,6 +516,21 @@ const SkenarioPlotPage = () => {
                 close={() => setOpenEditProperties(false)}
                 handlePropsChange={handleUpdatePropertiesUnit}
             />
+            <EditBuildingPropertiesSheet
+                open={openUpdateBuilding}
+                height={buildingHeight}
+                keterangan={buildingKetarangan}
+                name={buildingName}
+                color={buildingColor}
+                setName={(value) => setBuildingName(value)}
+                setHeight={(value) => setBuildingHeight(value)}
+                setKeterangan={(value) => setBuildingKetarangan(value)}
+                setColor={(value) => setBuildingColor(value)}
+                id={buildingId}
+                close={() => setOpenUpdateBuilding(false)}
+                handlePropsChange={handleUpdatePropertiesBuilding}
+            />
+            <div ref={contextMenuRef}></div>
         </MainLayout>
     );
 };

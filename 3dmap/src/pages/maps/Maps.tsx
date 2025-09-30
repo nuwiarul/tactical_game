@@ -13,7 +13,7 @@ import {
     createStreetLayer,
 } from "@/helpers/maps.ts";
 import {config} from "@/utils/constants.ts";
-import {UNITS, KENDARAANS, STACKHOLDERS, PEOPLES, TOOLS} from "@/utils/items.ts";
+import {UNITS, KENDARAANS, STACKHOLDERS, PEOPLES, TOOLS, BANGUNANS} from "@/utils/items.ts";
 import {createModelControl} from "@/helpers/controls.ts";
 import {createBaseObject} from "@/helpers/objects.ts";
 import MainLayout from "@/layouts/MainLayout.tsx";
@@ -30,7 +30,7 @@ const MapsIndex = () => {
             initialized.current = true;
             const streetLayer = createStreetLayer();
             const satelliteLayer = createSatelliteLayer();
-            mapInstance.current = createMap(mapRef.current, streetLayer, config.center, config.zoom, config.pitch, config.maxZoom);
+            mapInstance.current = createMap(mapRef.current, streetLayer, config.center, 18, 56, config.maxZoom);
             createCompassControl(mapInstance.current);
             createBaseLayerSwitcher(mapInstance.current, streetLayer, satelliteLayer, onHandleBaseLayerChange);
 
@@ -132,6 +132,25 @@ const MapsIndex = () => {
                     child: baseModel.child,
                 })
                 coordinateY -= 0.0005;
+            });
+
+            coordinateX -= 0.0009
+            coordinateY = -8.649107454211848;
+
+            BANGUNANS.map(baseModel => {
+                createBaseObject(gltfLayer, iconlayer, modelControl, {
+                    url: baseModel.modelUrl,
+                    center: [coordinateX, coordinateY],
+                    rotation: baseModel.rotation,
+                    height: baseModel.height,
+                    animation: baseModel.animation,
+                    id: baseModel.id,
+                    name: baseModel.name,
+                    icon: baseModel.icon,
+                    description: "Jumlah 1",
+                    child: baseModel.child,
+                })
+                coordinateY -= 0.0015;
             });
 
             createMapEventModelControl(mapInstance.current, modelControl);

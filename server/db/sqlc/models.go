@@ -9,6 +9,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Building struct {
+	ID         uuid.UUID        `json:"id"`
+	OperasiID  pgtype.UUID      `json:"operasi_id"`
+	SkenarioID pgtype.UUID      `json:"skenario_id"`
+	Name       pgtype.Text      `json:"name"`
+	Keterangan pgtype.Text      `json:"keterangan"`
+	Color      pgtype.Text      `json:"color"`
+	Geom       pgtype.Text      `json:"geom"`
+	Height     pgtype.Int4      `json:"height"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+}
+
 type Category struct {
 	ID        uuid.UUID        `json:"id"`
 	Name      pgtype.Text      `json:"name"`

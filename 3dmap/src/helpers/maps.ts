@@ -115,7 +115,7 @@ export const createBaseLayerSwitcher = (map: Map, streetLayer: TileLayer, satell
 
 
 
-export const createThreeLayer = (callback: (threeLayer: ThreeLayer) => void) => {
+export const createThreeLayer = (callback?: (threeLayer: ThreeLayer) => void) => {
     const threeLayer = new ThreeLayer('t', {
         forceRenderOnMoving: true,
         forceRenderOnRotating: true,
@@ -151,7 +151,10 @@ export const createThreeLayer = (callback: (threeLayer: ThreeLayer) => void) => 
         //camera.add(new THREE.PointLight('#fff', 4));
         const ambientLight = new THREE.AmbientLight(0xffffff, 2); // Adjust the intensity (0.3) as needed
         scene.add(ambientLight);
-        callback(threeLayer);
+        if (callback) {
+            callback(threeLayer);
+        }
+
     }
 
     return threeLayer;
@@ -203,7 +206,7 @@ export const createGroupGltfLayer = (map: Map, gltfLayers: GLTFLayer[]) => {
     // @ts-expect-error
     const groupLayer = new GroupGLLayer('groupGltf', gltfLayers, {sceneConfig, onlyWebGL1: false});
     groupLayer.addTo(map);
-
+    return groupLayer;
 
 }
 

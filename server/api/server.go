@@ -94,6 +94,7 @@ func (server *Server) setupRouter() {
 	publicGroup.GET("/skenarios/:operasi_id", server.listSkenarios)
 	publicGroup.GET("/skenarios/get/:id", server.getSkenarios)
 	publicGroup.GET("/markers/list/:skenario_id", server.listMarkers)
+	publicGroup.GET("/buildings/list/:skenario_id", server.listBuildings)
 	publicGroup.GET("/last_positions/:skenario_id", server.getLastPosition)
 	publicGroup.GET("/list/operasis", server.homeOperasis)
 	publicGroup.GET("/get/home/operasis/:id", server.getHomeOperasis)
@@ -120,6 +121,10 @@ func (server *Server) setupRouter() {
 	adminGroup.PUT("/markers/geom/:id", server.updateMarkerGeom)
 	adminGroup.PUT("/markers/name/:id", server.updateMarkerName)
 	adminGroup.DELETE("/markers/:id", server.deleteMarkers)
+
+	adminGroup.POST("/buildings", server.createBuildings)
+	adminGroup.PUT("/buildings/:id", server.updateBuilding)
+	adminGroup.DELETE("/buildings/:id", server.deleteBuildings)
 
 	//categoryGroup := router.Group("/")
 

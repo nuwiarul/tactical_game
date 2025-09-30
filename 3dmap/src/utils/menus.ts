@@ -14,7 +14,7 @@ export const adminItems = [
         ],
     },
     {
-        title: "Proses",
+        title: "Games",
         items: [
             {
                 title: "Operasis",
@@ -43,14 +43,21 @@ export const adminItems = [
 
 export const userItems = [
     {
-        title: "Proses",
+        title: "Ganes",
         items: [
             {
-                title: "Maps",
-                url: "/maps",
+                title: "Tactical Game",
+                url: "/games",
                 icon: Map,
-                active: "maps",
-                key: "master-maps"
+                active: "games",
+                key: "proses-games"
+            },
+            {
+                title: "Latihan",
+                url: "/latihans",
+                icon: Joystick,
+                active: "latihans",
+                key: "proses-latihans"
             }
         ]
     }

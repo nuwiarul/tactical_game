@@ -41,6 +41,12 @@ export const API_PATHS = {
         UPDATE_GEOM: (id: string) => `/admin/markers/geom/${id}`,
         UPDATE_NAME: (id: string) => `/admin/markers/name/${id}`,
     },
+    BUILDINGS : {
+        DELETE: (id: string) => `/admin/buildings/${id}`,
+        LIST: (skenarioId: string) => `/public/buildings/list/${skenarioId}`,
+        CREATE: '/admin/buildings',
+        UPDATE: (id: string) => `/admin/buildings/${id}`,
+    },
     PROFILE: {
         IDENTIFY : "/private/identify",
     },

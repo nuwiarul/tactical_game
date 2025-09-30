@@ -5,7 +5,7 @@ import {
     createCompassControl, createGroupGltfLayer,
     createMap,
     createSatelliteLayer,
-    createStreetLayer, getGltfLayerWithGroup
+    createStreetLayer, createThreeLayer, getGltfLayerWithGroup
 } from "@/helpers/maps.ts";
 import {config} from "@/utils/constants.ts";
 import PublicLayout from "@/layouts/PublicLayout.tsx";
@@ -17,6 +17,9 @@ import {consoleErrorApi} from "@/helpers/logs.ts";
 import type {IUnit} from "@/helpers/type.data.ts";
 import type {IHomeOperasi} from "@/pages/home/ListOperasi.tsx";
 import ListSkenarioSheet from "@/components/ListSkenarioSheet.tsx";
+import {removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
+import type {ThreeLayer} from "maptalks.three";
+import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
 
 
 const PreviewMap = () => {
@@ -27,6 +30,8 @@ const PreviewMap = () => {
     const textPanel = useRef<control.Panel | null>(null);
     const markerInstance = useRef<GLTFMarker[]>([])
     const skenarioIdInstance = useRef("");
+    const threeLayerInstance = useRef<ThreeLayer>(null);
+    const buildingInstance = useRef<ExtrudePolygon[]>([]);
 
     const {operasi_id, skenario_id} = useParams();
 
@@ -35,22 +40,10 @@ const PreviewMap = () => {
     const [homeOperasis, setHomeOperasis] = useState<IHomeOperasi | null>(null)
 
     const removeGltfMarkers = (id: string) => {
-        if (mapInstance.current) {
-
-            markerInstance.current.forEach(marker => {
-                const properties = marker.getProperties() as IObjectProperties;
-                if (properties.icon) {
-                    properties.icon.remove();
-                }
-                if (properties.child) {
-                    properties.child.remove();
-                }
-                marker.remove();
-
-            });
-
+        const callbackRemoveGltf=  () => {
             getMarkers(id);
         }
+        removeGltfMarkersHelper(mapInstance.current!, markerInstance.current, callbackRemoveGltf)
     }
 
     const reloadMarkers = (listUnits: IUnit[]) => {
@@ -72,10 +65,11 @@ const PreviewMap = () => {
                             unit_id: item.unit_id,
                             name: item.name,
                             icon: baseModel.icon,
-                            description: `Jumlah ${item.jumlah}<br/>${item.keterangan}`,
+                            description: `${item.kategori !== "bangunan" ? `Jumlah ${item.jumlah}<br/>` : "" }${item.keterangan}`,
                             child: baseModel.child,
                             keterangan: item.keterangan,
                             jumlah: item.jumlah,
+                            isMove: item.kategori !== "bangunan",
                         })
                         units.push(unit)
                     }
@@ -116,7 +110,7 @@ const PreviewMap = () => {
 
             const gltfLayer = new GLTFLayer('gltf');
             const iconlayer = new GLTFLayer('icon');
-            createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]);
+            const groupGlLayer = createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]);
             new control.Toolbar({
                 position: {top: 80, right: 20},
                 vertical: true,
@@ -147,7 +141,20 @@ const PreviewMap = () => {
             }).addTo(mapInstance.current)
             isFirst.current = true;
             removeGltfMarkers(skenario_id as string);
+            threeLayerInstance.current = createThreeLayer();
+            groupGlLayer.addLayer(threeLayerInstance.current);
+            removeBuildings(
+                skenario_id as string,
+                mapInstance.current as Map,
+                threeLayerInstance.current as ThreeLayer,
+                buildingInstance.current,
+                callbackRemoveBuilding,
+            );
         }
+    }
+
+    const callbackRemoveBuilding = (buildings: ExtrudePolygon[])=> {
+        buildingInstance.current = buildings;
     }
 
     const reloadMap = (id: string, valName: string, valOperasiName: string, valCenterX: number, valCenterY: number, valZoom: number, valPitch: number) => {
@@ -176,6 +183,13 @@ const PreviewMap = () => {
                 mapInstance.current.addControl(textPanel.current);
             }
             removeGltfMarkers(id);
+            removeBuildings(
+                id,
+                mapInstance.current as Map,
+                threeLayerInstance.current as ThreeLayer,
+                buildingInstance.current,
+                callbackRemoveBuilding,
+            );
         }
     }
 

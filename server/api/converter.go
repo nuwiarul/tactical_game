@@ -54,6 +54,20 @@ func (server *Server) pgTypeOperasiSkenarioUnit(operasiId, skenarioId, unitId st
 	return operasiUUID, skenarioUUID, unitUUID, nil
 }
 
+func (server *Server) pgTypeOperasiSkenario(operasiId, skenarioId string) (pgtype.UUID, pgtype.UUID, error) {
+	operasiUUID, err := db.ToUuid(operasiId)
+	if err != nil {
+		return pgtype.UUID{}, pgtype.UUID{}, err
+	}
+
+	skenarioUUID, err := db.ToUuid(skenarioId)
+	if err != nil {
+		return pgtype.UUID{}, pgtype.UUID{}, err
+	}
+
+	return operasiUUID, skenarioUUID, nil
+}
+
 func (server *Server) uuidOperasiSkenarioUnit(operasiId, skenarioId, unitId string) (uuid.UUID, uuid.UUID, uuid.UUID, error) {
 	operasiUUID, err := uuid.Parse(operasiId)
 	if err != nil {

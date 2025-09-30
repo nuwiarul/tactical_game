@@ -6,17 +6,20 @@ import {
     createCompassControl, createGroupGltfLayer,
     createMapDisable,
     createSatelliteLayer,
-    createStreetLayer, getGltfLayerWithGroup
+    createStreetLayer, createThreeLayer, getGltfLayerWithGroup
 } from "@/helpers/maps.ts";
 import {CHANNEL, config} from "@/utils/constants.ts";
 import {Centrifuge} from "centrifuge";
 import {API_PATHS, CENTRIFUGO_URL} from "@/utils/apiPaths";
 import {useEffectOnce} from "react-use";
-import { createHomeBaseObject, getUnit, type IObjectProperties} from "@/helpers/objects.ts";
+import {createHomeBaseObject, getUnit, type IBuildingProperties, type IObjectProperties} from "@/helpers/objects.ts";
 import type {IUnit} from "@/helpers/type.data.ts";
 import axiosInstance from "@/utils/axiosInstance.ts";
 import {consoleErrorApi} from "@/helpers/logs.ts";
 import {formatRouteData, RoutePlayer} from "maptalks.routeplayer";
+import {removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
+import type {ThreeLayer} from "maptalks.three";
+import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
 
 
 const HomeIndex = () => {
@@ -28,6 +31,9 @@ const HomeIndex = () => {
     const markerInstance = useRef<GLTFMarker[]>([])
     const streetLayerInstance = useRef<TileLayer>(null);
     const satelliteLayerInstance = useRef<TileLayer>(null);
+    const threeLayerInstance = useRef<ThreeLayer>(null);
+    const buildingInstance = useRef<ExtrudePolygon[]>([]);
+
     useEffect(() => {
         if (!initialized.current && mapRef.current) {
             initialized.current = true;
@@ -39,33 +45,24 @@ const HomeIndex = () => {
 
             const gltfLayer = new GLTFLayer('gltf');
             const iconlayer = new GLTFLayer('icon');
-            createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]);
+            const groupGlLayer = createGroupGltfLayer(mapInstance.current, [gltfLayer, iconlayer]);
 
             //createModelControl(mapInstance.current);
+
+            //reload building
+            threeLayerInstance.current = createThreeLayer();
+            groupGlLayer.addLayer(threeLayerInstance.current);
         }
 
 
     }, []);
 
 
-
     const removeGltfMarkers = (id: string) => {
-        if (mapInstance.current) {
-
-            markerInstance.current.forEach(marker => {
-                const properties = marker.getProperties() as IObjectProperties;
-                if (properties.icon) {
-                    properties.icon.remove();
-                }
-                if (properties.child) {
-                    properties.child.remove();
-                }
-                marker.remove();
-
-            });
-
+        const callbackRemoveGltf=  () => {
             getMarkers(id);
         }
+        removeGltfMarkersHelper(mapInstance.current!, markerInstance.current, callbackRemoveGltf)
     }
 
     const reloadMarkers = (listUnits: IUnit[]) => {
@@ -87,7 +84,7 @@ const HomeIndex = () => {
                             unit_id: item.unit_id,
                             name: item.name,
                             icon: baseModel.icon,
-                            description: `Jumlah ${item.jumlah}<br/>${item.keterangan}`,
+                            description: `${item.kategori !== "bangunan" ? `Jumlah ${item.jumlah}<br/>` : "" }${item.keterangan}`,
                             child: baseModel.child,
                             keterangan: item.keterangan,
                             jumlah: item.jumlah,
@@ -146,7 +143,18 @@ const HomeIndex = () => {
                 mapInstance.current.addControl(textPanel.current);
             }
             removeGltfMarkers(id);
+            removeBuildings(
+                id,
+                mapInstance.current as Map,
+                threeLayerInstance.current as ThreeLayer,
+                buildingInstance.current,
+                callbackRemoveBuilding,
+            );
         }
+    }
+
+    const callbackRemoveBuilding = (buildings: ExtrudePolygon[])=> {
+        buildingInstance.current = buildings;
     }
 
 
@@ -265,6 +273,27 @@ const HomeIndex = () => {
 
     }
 
+    const infoBuilding = (command: string, building_id: string) => {
+        console.log(command)
+        console.log(building_id)
+        for (let i = 0; i < buildingInstance.current.length; i++) {
+            const building = buildingInstance.current[i] as ExtrudePolygon;
+            const properties = building.getProperties() as IBuildingProperties;
+            console.log(properties.id);
+            if (properties.id === building_id) {
+
+                if (command === "SHOWINFO_BUIlDING") {
+                    building.openInfoWindow(building.getCenter());
+                } else if (command === "HIDEINFO_BUILDING") {
+                    building.closeInfoWindow();
+                }
+                break;
+            }
+        }
+
+
+    }
+
     const changeLayer = (data: string) => {
         if (mapInstance.current) {
             const layer = JSON.parse(data);
@@ -314,6 +343,9 @@ const HomeIndex = () => {
                 zoom(data.data);
             } else if (data.command === "SHOWINFO" || data.command === "HIDEINFO") {
                 info(data.command, data.marker_id);
+            } else if (data.command === "SHOWINFO_BUIlDING" || data.command === "HIDEINFO_BUILDING") {
+                console.log('Publication received', data);
+                infoBuilding(data.command, data.marker_id);
             } else if (data.command === "CHANGE") {
                 changeLayer(data.data);
             }
