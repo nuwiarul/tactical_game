@@ -1,6 +1,6 @@
 import type {IBuilding} from "@/helpers/type.data.ts";
 import {useState} from "react";
-import {Sheet, SheetContent, SheetHeader, SheetTitle} from "@/components/ui/sheet.tsx";
+import {Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@/components/ui/sheet.tsx";
 import {Label} from "@/components/ui/label.tsx";
 import {Input} from "@/components/ui/input.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
@@ -69,6 +69,7 @@ const AddBuildingSheet = ({open, geom, skenarioId, operasiId, close, addBuilding
             <SheetContent className="[&>button:first-of-type]:hidden">
                 <SheetHeader>
                     <SheetTitle>Add Building</SheetTitle>
+                    <SheetDescription></SheetDescription>
                 </SheetHeader>
                 <ScrollArea className="max-h-full">
                     <div className="p-4 mb-25 flex flex-col gap-2">

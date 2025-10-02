@@ -22,6 +22,9 @@ import UserDashboard from "@/pages/user/UserDashboard.tsx";
 import UnitPage from "@/pages/units/UnitPage.tsx";
 import ListGame from "@/pages/game/ListGame.tsx";
 import PreviewGame from "@/pages/game/PreviewGame.tsx";
+import UsersPage from "@/pages/users/UsersPage.tsx";
+import UsersCreate from "@/pages/users/UsersCreate.tsx";
+import UsersUpdate from "@/pages/users/UsersUpdate.tsx";
 
 const queryClient = new QueryClient()
 
@@ -35,14 +38,17 @@ const App = () => {
                             <Routes>
                                 <Route element={<PrivateRoute allowedRoles={["admin"]}/>}>
                                     <Route path="/admin" element={<AdminDashboard/>}/>
-                                    <Route path="/operasis" element={<OperasiPage/>}/>
                                     <Route path="/units" element={<UnitPage/>}/>
+                                    <Route path="/users" element={<UsersPage/>}/>
+                                    <Route path="/users/create" element={<UsersCreate/>}/>
+                                    <Route path="/users/update/:id" element={<UsersUpdate/>}/>
                                     <Route path="/operasis/create" element={<OperasiCreate/>}/>
                                     <Route path="/operasis/update/:id" element={<OperasiUpdate/>}/>
                                     <Route path="/skenarios/create/:operasiId" element={<SkenarioMapCreate/>}/>
-                                    <Route path="/skenarios/plot/:id" element={<SkenarioPlotPage/>}/>
                                 </Route>
                                 <Route element={<PrivateRoute allowedRoles={["admin", "user"]}/>}>
+                                    <Route path="/operasis" element={<OperasiPage/>}/>
+                                    <Route path="/skenarios/plot/:id" element={<SkenarioPlotPage/>}/>
                                     <Route path="/user" element={<UserDashboard/>}/>
                                     <Route path="/maps" element={<MapsIndex/>}/>
                                     <Route path="/games" element={<ListGame isRecord={1}/>}/>

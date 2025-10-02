@@ -1,4 +1,4 @@
-import {Joystick, Layers2, Map, PersonStanding} from "lucide-react";
+import {Joystick, Layers2, Map, PersonStanding, Users} from "lucide-react";
 
 export const adminItems = [
     {
@@ -10,6 +10,13 @@ export const adminItems = [
                 icon: PersonStanding,
                 active: "unitss",
                 key: "master-unitss"
+            },
+            {
+                title: "Users",
+                url: "/users",
+                icon: Users,
+                active: "users",
+                key: "master-users"
             }
         ],
     },
@@ -43,8 +50,15 @@ export const adminItems = [
 
 export const userItems = [
     {
-        title: "Ganes",
+        title: "Games",
         items: [
+            {
+                title: "Operasis",
+                url: "/operasis",
+                icon: Layers2,
+                active: "operasis",
+                key: "proses-operasis"
+            },
             {
                 title: "Tactical Game",
                 url: "/games",

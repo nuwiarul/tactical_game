@@ -16,6 +16,7 @@ type Querier interface {
 	CountOperasis(ctx context.Context) (int64, error)
 	CountSearchCategories(ctx context.Context, name string) (int64, error)
 	CountSearchOperasis(ctx context.Context, name string) (int64, error)
+	CreateAlur(ctx context.Context, arg CreateAlurParams) (Alur, error)
 	CreateBuilding(ctx context.Context, arg CreateBuildingParams) (Building, error)
 	CreateCategory(ctx context.Context, arg CreateCategoryParams) (Category, error)
 	CreateCommand(ctx context.Context, arg CreateCommandParams) (Command, error)
@@ -25,15 +26,19 @@ type Querier interface {
 	CreateOperasi(ctx context.Context, name pgtype.Text) (Operasi, error)
 	CreateSkenario(ctx context.Context, arg CreateSkenarioParams) (Skenario, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeleteAlur(ctx context.Context, id uuid.UUID) error
 	DeleteBuilding(ctx context.Context, id uuid.UUID) error
 	DeleteCategories(ctx context.Context, id uuid.UUID) error
 	DeleteMarkers(ctx context.Context, id uuid.UUID) error
 	DeleteOperasis(ctx context.Context, id uuid.UUID) error
 	DeleteSkenarios(ctx context.Context, id uuid.UUID) error
+	DeleteUsers(ctx context.Context, id uuid.UUID) error
 	GetCategories(ctx context.Context, id uuid.UUID) (Category, error)
 	GetMarker(ctx context.Context, id uuid.UUID) (GetMarkerRow, error)
 	GetOperasis(ctx context.Context, id uuid.UUID) (Operasi, error)
 	GetSkenarios(ctx context.Context, id uuid.UUID) (GetSkenariosRow, error)
+	GetUser(ctx context.Context, id uuid.UUID) (GetUserRow, error)
+	ListAlursBySkenario(ctx context.Context, skenarioID pgtype.UUID) ([]Alur, error)
 	ListBuildingsBySkenario(ctx context.Context, skenarioID pgtype.UUID) ([]ListBuildingsBySkenarioRow, error)
 	ListCategories(ctx context.Context) ([]Category, error)
 	ListCommandsBySkenario(ctx context.Context, skenarioID pgtype.UUID) ([]Command, error)
@@ -43,11 +48,13 @@ type Querier interface {
 	ListMarkersBySkenario(ctx context.Context, skenarioID pgtype.UUID) ([]ListMarkersBySkenarioRow, error)
 	ListOperasis(ctx context.Context) ([]Operasi, error)
 	ListSkenariosByOperasi(ctx context.Context, operasiID pgtype.UUID) ([]ListSkenariosByOperasiRow, error)
+	ListUsers(ctx context.Context) ([]ListUsersRow, error)
 	PaginateCategories(ctx context.Context, arg PaginateCategoriesParams) ([]Category, error)
 	PaginateOperasis(ctx context.Context, arg PaginateOperasisParams) ([]Operasi, error)
 	PaginateSearchCategories(ctx context.Context, arg PaginateSearchCategoriesParams) ([]Category, error)
 	PaginateSearchOperasis(ctx context.Context, arg PaginateSearchOperasisParams) ([]Operasi, error)
 	SelectUsers(ctx context.Context, username pgtype.Text) (SelectUsersRow, error)
+	UpdateAlur(ctx context.Context, arg UpdateAlurParams) (Alur, error)
 	UpdateBuilding(ctx context.Context, arg UpdateBuildingParams) (Building, error)
 	UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error)
 	UpdateLastMaps(ctx context.Context, arg UpdateLastMapsParams) (LastMap, error)
@@ -59,6 +66,7 @@ type Querier interface {
 	UpdateMarkerScale(ctx context.Context, arg UpdateMarkerScaleParams) (Marker, error)
 	UpdateOperasi(ctx context.Context, arg UpdateOperasiParams) (Operasi, error)
 	UpdateSkenario(ctx context.Context, arg UpdateSkenarioParams) (Skenario, error)
+	UpdateUserUnit(ctx context.Context, arg UpdateUserUnitParams) (User, error)
 }
 
 var _ Querier = (*Queries)(nil)

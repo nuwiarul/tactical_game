@@ -75,7 +75,7 @@ const LoginPage = () => {
 
     return (
         <AuthLayout>
-            <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
+            <div className="lg:w-[100%] h-3/4 md:h-full flex flex-col justify-center">
                 <Card className="p-4">
                     <Form {...form}>
                         <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>

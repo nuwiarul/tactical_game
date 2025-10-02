@@ -7,13 +7,13 @@ import {
     createSatelliteLayer,
     createStreetLayer, createThreeLayer, createZoomControl, getGltfLayerWithGroup
 } from "@/helpers/maps.ts";
-import {config} from "@/utils/constants.ts";
+import {CHANNEL, config} from "@/utils/constants.ts";
 import {useParams} from "react-router-dom";
 import {createBaseObject, getUnit, type IObjectProperties} from "@/helpers/objects.ts";
 import axiosInstance from "@/utils/axiosInstance.ts";
-import {API_PATHS} from "@/utils/apiPaths.ts";
+import {API_PATHS, CENTRIFUGO_URL} from "@/utils/apiPaths.ts";
 import {consoleErrorApi} from "@/helpers/logs.ts";
-import type {IUnit} from "@/helpers/type.data.ts";
+import type {IAlur, IUnit} from "@/helpers/type.data.ts";
 import type {IHomeOperasi} from "@/pages/home/ListOperasi.tsx";
 import ListSkenarioSheet from "@/components/ListSkenarioSheet.tsx";
 import MainLayout from "@/layouts/MainLayout.tsx";
@@ -22,24 +22,31 @@ import MainLayout from "@/layouts/MainLayout.tsx";
 import {ModelControl} from "@/lib/modelcontrol";
 import {createModelControl} from "@/helpers/controls.ts";
 import {toast} from "sonner";
-import {removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
+import {checkMove, getAlurs, removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
 import type {ThreeLayer} from "maptalks.three";
 import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
+import AlurSheet from "@/components/AlurSheet.tsx";
+import {useIdentify} from "@/context/AuthProvider.tsx";
+import type {IBaseModel} from "@/utils/items.ts";
+import {useEffectOnce} from "react-use";
+import {Centrifuge} from "centrifuge";
 
 
-
-const PreviewGame = ({isRecord}: {isRecord: number}) => {
+const PreviewGame = ({isRecord}: { isRecord: number }) => {
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<Map>(null);
     const initialized = useRef(false);
     const isFirst = useRef(false);
-    const textPanel = useRef<control.Panel|null>(null);
+    const textPanel = useRef<control.Panel | null>(null);
     const modelControlInstance = useRef<ModelControl | null>(null);
     const skenarioIdInstance = useRef("");
     const lastCommandInstance = useRef("");
     const markerInstance = useRef<GLTFMarker[]>([])
     const threeLayerInstance = useRef<ThreeLayer>(null);
     const buildingInstance = useRef<ExtrudePolygon[]>([]);
+    const unitsInstance = useRef<IBaseModel[]>([]);
+    const unitRoleInstance = useRef("admin");
+
 
     const {operasi_id, skenario_id} = useParams();
 
@@ -48,9 +55,14 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
     const [shareUrl, setShareUrl] = useState("");
     const [shareTitle, setShareTitle] = useState("");
 
+    const [openAlur, setOpenAlur] = useState(false);
+    const [listAlurs, setListAlurs] = useState<IAlur[]>([]);
+
+    const user = useIdentify();
+
     const removeGltfMarkers = (id: string) => {
 
-        const callbackRemoveGltf=  () => {
+        const callbackRemoveGltf = () => {
             getMarkers(id);
         }
         removeGltfMarkersHelper(mapInstance.current!, markerInstance.current, callbackRemoveGltf)
@@ -69,21 +81,21 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                         const unit = createBaseObject(gltfLayer, iconlayer, modelControlInstance.current, {
                             url: baseModel.modelUrl,
                             center: [item.pos_x, item.pos_y],
-                            rotation: { x: item.rot_x, y: item.rot_y, z: item.rot_z },
+                            rotation: {x: item.rot_x, y: item.rot_y, z: item.rot_z},
                             height: baseModel.height,
                             animation: baseModel.animation,
                             id: item.id,
                             unit_id: item.unit_id,
                             name: item.name,
                             icon: baseModel.icon,
-                            description: `${item.kategori !== "bangunan" ? `Jumlah ${item.jumlah}<br/>` : "" }${item.keterangan}`,
+                            description: `${item.kategori !== "bangunan" ? `Jumlah ${item.jumlah}<br/>` : ""}${item.keterangan}`,
                             child: baseModel.child,
                             keterangan: item.keterangan,
                             jumlah: item.jumlah,
                             callbackinfo: callbackInfoWindow,
                             dragable: true,
                             callbackdrag: callbackDrag,
-                            isMove: item.kategori !== "bangunan",
+                            isMove: item.kategori !== "bangunan" ? checkMove(item.unit_id, unitsInstance.current, unitRoleInstance.current) : false,
                             scale: item.scale,
 
                         })
@@ -95,10 +107,15 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
         }
     }
 
-    const callbackInfoWindow = (id: string, command: string) => {
-        publish(command, JSON.stringify({command: command, marker_id: id}), operasi_id as string, skenarioIdInstance.current, id, isRecord);
-    }
 
+
+
+    const callbackInfoWindow = (id: string, command: string) => {
+        publish(command, JSON.stringify({
+            command: command,
+            marker_id: id
+        }), operasi_id as string, skenarioIdInstance.current, id, isRecord);
+    }
 
 
     const callbackDrag = (id: string, command: string, data: string) => {
@@ -116,7 +133,7 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
         }
     }
 
-    const initMap = (valName: string, valOperasiName: string, valCenterX:number, valCenterY: number, valZoom: number, valPitch: number) => {
+    const initMap = (valName: string, valOperasiName: string, valCenterX: number, valCenterY: number, valZoom: number, valPitch: number) => {
         if (!initialized.current && mapRef.current) {
             initialized.current = true;
             const streetLayer = createStreetLayer();
@@ -129,11 +146,11 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
             createBaseLayerSwitcher(mapInstance.current, streetLayer, satelliteLayer, callbackLayerSwitcher);
             console.log(valName);
             textPanel.current = new control.Panel({
-                'position'      : {'top': 20, 'left': 60},
-                'draggable'     : false,
-                'custom'        : true,
-                'content'       : `<div class="flex flex-col gap-0"><span class="text-sm font-bold text-red-400">${valOperasiName}</span><span class="text-xs font-bold text-red-400">${valName}</span></div>`,
-                'closeButton'   : false
+                'position': {'top': 20, 'left': 60},
+                'draggable': false,
+                'custom': true,
+                'content': `<div class="flex flex-col gap-0"><span class="text-sm font-bold text-red-400">${valOperasiName}</span><span class="text-xs font-bold text-red-400">${valName}</span></div>`,
+                'closeButton': false
             });
             mapInstance.current.addControl(textPanel.current);
 
@@ -143,13 +160,20 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
 
             const menus = [{
                 item: 'List Skenario',
-                click: function() {
+                click: function () {
                     setOpenListSkenario(true)
                 },
 
             }, {
+                item: 'List Alur',
+                click: function () {
+                    setOpenAlur(true);
+                    publish("OPEN_ALUR", JSON.stringify({alur: "open"}), operasi_id as string, skenario_id as string, "open_alur", 0)
+                },
+
+            }, {
                 item: 'Last Command',
-                click: function() {
+                click: function () {
                     publishLastCommand();
                 },
 
@@ -158,7 +182,7 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
             if (isRecord === 1) {
                 menus.push({
                     item: 'Last Positions',
-                    click: function() {
+                    click: function () {
                         getLastPositions();
                     },
 
@@ -167,12 +191,12 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
 
             menus.push({
                 item: 'Export Image',
-                click: function() {
+                click: function () {
                     if (mapInstance.current) {
-                    mapInstance.current.toDataURL({
-                            'mimeType' : 'image/jpeg', // or 'image/png'
-                            'save' : true,             // to pop a save dialog
-                            'fileName' : 'map'         // file name
+                        mapInstance.current.toDataURL({
+                            'mimeType': 'image/jpeg', // or 'image/png'
+                            'save': true,             // to pop a save dialog
+                            'fileName': 'map'         // file name
                         });
                     }
                 },
@@ -182,7 +206,7 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
 
             new control.Toolbar({
                 position: {top: 80, right: 20},
-                'vertical' : true,
+                'vertical': true,
                 items: menus
             }).addTo(mapInstance.current)
             modelControlInstance.current = createModelControl(mapInstance.current, callbackModelControl);
@@ -201,7 +225,7 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                 buildingInstance.current,
                 callbackRemoveBuilding,
                 callbackInfoWindowBuilding
-                );
+            );
 
 
             mapInstance.current.on('moveend zoomend pitchend', (param) => {
@@ -210,19 +234,33 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                     const zoom = mapInstance.current?.getZoom();
                     const pitch = mapInstance.current?.getPitch();
                     const bearing = mapInstance.current?.getBearing();
-                    publish("ZOOM", JSON.stringify({center: center, zoom: zoom, pitch: pitch, bearing: bearing}), operasi_id as string, skenarioIdInstance.current, "4cfb8599-62ee-41dc-ad34-f13706547840", isRecord);
+                    if (unitRoleInstance.current === "admin") {
+                        publish("ZOOM", JSON.stringify({
+                            center: center,
+                            zoom: zoom,
+                            pitch: pitch,
+                            bearing: bearing
+                        }), operasi_id as string, skenarioIdInstance.current, "4cfb8599-62ee-41dc-ad34-f13706547840", isRecord);
+                    }
+
                 }
             });
-            publish("RELOAD", JSON.stringify({reload: true}), operasi_id as string, skenario_id as string, "reload", 0)
+            if (unitRoleInstance.current === "admin") {
+                publish("RELOAD", JSON.stringify({reload: true}), operasi_id as string, skenario_id as string, "reload", 0)
+            }
+
         }
     }
 
     const callbackInfoWindowBuilding = (id: string, command: string) => {
         console.log(command)
-        publish(`${command}_BUIlDING`, JSON.stringify({command: command, building_id: id}), operasi_id as string, skenarioIdInstance.current, id, isRecord);
+        publish(`${command}_BUIlDING`, JSON.stringify({
+            command: command,
+            building_id: id
+        }), operasi_id as string, skenarioIdInstance.current, id, isRecord);
     }
 
-    const callbackRemoveBuilding = (buildings: ExtrudePolygon[])=> {
+    const callbackRemoveBuilding = (buildings: ExtrudePolygon[]) => {
         buildingInstance.current = buildings;
     }
 
@@ -230,17 +268,20 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
         publish("CHANGE", JSON.stringify({layer: layer}), operasi_id as string, skenario_id as string, "reload", 0)
     }
 
-    const reloadMap = (id: string, valName: string, valOperasiName: string,  valCenterX:number, valCenterY: number, valZoom: number, valPitch: number) => {
+    const reloadMap = (id: string, valName: string, valOperasiName: string, valCenterX: number, valCenterY: number, valZoom: number, valPitch: number) => {
         if (mapInstance.current) {
-            publish("RELOAD", JSON.stringify({reload: true}), operasi_id as string, id as string, "reload", 0)
+            if (unitRoleInstance.current === "admin") {
+                publish("RELOAD", JSON.stringify({reload: true}), operasi_id as string, id as string, "reload", 0);
+            }
+
             mapInstance.current.flyTo({
-                zoom : valZoom,
-                center : [valCenterX, valCenterY],
-                pitch : valPitch,
+                zoom: valZoom,
+                center: [valCenterX, valCenterY],
+                pitch: valPitch,
             }, {
-                duration : 1000,
-                easing : 'out'
-            }, function(frame) {
+                duration: 1000,
+                easing: 'out'
+            }, function (frame) {
                 if (frame.state.playState === 'finished') {
                     console.log('animation finished');
                 }
@@ -248,11 +289,11 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
             if (textPanel.current) {
                 mapInstance.current.removeControl(textPanel.current);
                 textPanel.current = new control.Panel({
-                    'position'      : {'top': 20, 'left': 60},
-                    'draggable'     : false,
-                    'custom'        : true,
-                    'content'       : `<div class="flex flex-col gap-0"><span class="text-sm font-bold text-red-400">${valOperasiName}</span><span class="text-xs font-bold text-red-400">${valName}</span></div>`,
-                    'closeButton'   : false
+                    'position': {'top': 20, 'left': 60},
+                    'draggable': false,
+                    'custom': true,
+                    'content': `<div class="flex flex-col gap-0"><span class="text-sm font-bold text-red-400">${valOperasiName}</span><span class="text-xs font-bold text-red-400">${valName}</span></div>`,
+                    'closeButton': false
                 });
                 mapInstance.current.addControl(textPanel.current);
             }
@@ -296,6 +337,10 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                         );
                     }
                 }
+
+                await getAlurs(id as string, (rows: IAlur[]) => {
+                    setListAlurs(rows);
+                });
             }
 
         } catch (error) {
@@ -304,8 +349,22 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
 
     }
 
+
+
+
     useEffect(() => {
-        getSkenario(skenario_id);
+        //console.log(user.user?.user);
+        if (user) {
+            //console.log(user.user?.user);
+            unitsInstance.current = user.user?.user.units as IBaseModel[]
+            if (user.user?.user.units[0].id === "all") {
+                unitRoleInstance.current = "admin"
+            } else {
+                unitRoleInstance.current = "user"
+            }
+            getSkenario(skenario_id);
+        }
+
     }, [skenario_id]);
 
     const getOperasi = async (id: string) => {
@@ -379,14 +438,14 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
                     if (mapInstance.current) {
                         if (response.data.data.last_map.center_x !== 0 || response.data.data.last_map.center_y !== 0) {
                             mapInstance.current.flyTo({
-                                zoom : response.data.data.last_map.zoom,
-                                center : [response.data.data.last_map.center_x, response.data.data.last_map.center_y],
-                                pitch : response.data.data.last_map.pitch,
-                                bearing : response.data.data.last_map.bearing,
+                                zoom: response.data.data.last_map.zoom,
+                                center: [response.data.data.last_map.center_x, response.data.data.last_map.center_y],
+                                pitch: response.data.data.last_map.pitch,
+                                bearing: response.data.data.last_map.bearing,
                             }, {
-                                duration : 1000,
-                                easing : 'out'
-                            }, function(frame) {
+                                duration: 1000,
+                                easing: 'out'
+                            }, function (frame) {
                                 if (frame.state.playState === 'finished') {
                                     console.log('animation finished');
                                 }
@@ -430,12 +489,113 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
         return null;
     }
 
+    const onCloseAlurSheet = (value: boolean) => {
+        setOpenAlur(value);
+        if (!value) {
+            publish("CLOSE_ALUR", JSON.stringify({alur: "close"}), operasi_id as string, skenario_id as string, "close_alur", 0)
+        }
+    }
+
+    const zoom = (data: string) => {
+        if (mapInstance.current) {
+            const geom = JSON.parse(data)
+            mapInstance.current.flyTo({
+                zoom : geom.zoom,
+                center : [geom.center.x, geom.center.y],
+                pitch : geom.pitch,
+                bearing: geom.bearing,
+            }, {
+                duration : 1000,
+                easing : 'out'
+            }, function(frame) {
+                if (frame.state.playState === 'finished') {
+                    console.log('animation finished');
+                }
+            });
+        }
+    }
+
+
+
+    useEffectOnce(() => {
+
+        let centrifuge = null;
+        let sub = null;
+
+        if (user) {
+            centrifuge = new Centrifuge(CENTRIFUGO_URL);
+
+            // 2. Tambahkan event listener
+            centrifuge.on('connected', (ctx) => {
+                console.log('Connected to Centrifugo', ctx);
+            });
+
+            centrifuge.on('disconnected', (ctx) => {
+                console.log('Disconnected from Centrifugo', ctx);
+            });
+
+            // 3. Langganan (Subscribe) ke sebuah channel
+            sub = centrifuge.newSubscription(CHANNEL);
+
+            // 4. Tambahkan event listener untuk channel
+            sub.on('publication', (ctx) => {
+                const data = ctx.data;
+                //console.log('Publication received', data);
+                if (data.command === "RELOAD") {
+                    //getSkenario(data.skenario_id as string);
+                    if (unitRoleInstance.current === "user") {
+                        getSkenario(data.skenario_id as string);
+                    }
+                } else if (data.command === "MOVE") {
+                    //move(data.data, data.marker_id);
+                } else if (data.command === "ROT") {
+                    //rot(data.data, data.marker_id);
+                } else if (data.command === "ZOOM") {
+                    //zoom(data.data);
+                    if (unitRoleInstance.current === "user") {
+                        zoom(data.data);
+                    }
+                }
+            });
+
+            sub.on('subscribing', (ctx) => {
+                console.log('Subscribing to channel', ctx);
+            });
+
+            sub.on('subscribed', (ctx) => {
+                console.log('Successfully subscribed', ctx);
+            });
+
+            // 5. Connect ke Centrifugo
+            sub.subscribe();
+            centrifuge.connect();
+        }
+
+
+
+        // 6. Cleanup function
+        // Penting: Putuskan koneksi saat komponen di-unmount
+        return () => {
+            if (sub) {
+                sub.unsubscribe();
+            }
+
+            if (centrifuge) {
+                centrifuge.disconnect();
+            }
+
+
+        };
+    });
 
 
     return (
-        <MainLayout activeMenu={isRecord ? "games" : "latihans"} title={isRecord ? "Tactical Game" : "Latihan"} share={{url: shareUrl, title: shareTitle}}>
+        <MainLayout activeMenu={isRecord ? "games" : "latihans"} title={isRecord ? "Tactical Game" : "Latihan"}
+                    share={{url: shareUrl, title: shareTitle}}>
             <div ref={mapRef} className="w-full h-full"></div>
-            <ListSkenarioSheet open={ openListSkenario } operasi={homeOperasis} setOpen={setOpenListSkenario} handleSkenarioChange={handleSkenarioChange} />
+            <ListSkenarioSheet open={openListSkenario} operasi={homeOperasis} setOpen={setOpenListSkenario}
+                               handleSkenarioChange={handleSkenarioChange}/>
+            <AlurSheet open={openAlur} setOpen={onCloseAlurSheet} rows={listAlurs}/>
         </MainLayout>
     )
 };

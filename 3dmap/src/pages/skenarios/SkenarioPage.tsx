@@ -13,6 +13,7 @@ import {Button} from "@/components/ui/button";
 import {DataTable} from "@/components/DataTable.tsx";
 import AppLoading from "@/components/AppLoading.tsx";
 import AppError from "@/components/AppError.tsx";
+import {useIdentify} from "@/context/AuthProvider.tsx";
 
 type ISkenario = {
     id: string;
@@ -38,7 +39,7 @@ const listSkenarios = async (operasiId: string) => {
     return res.data;
 }
 
-const getColumns = (onDelete: (id: string) => void): ColumnDef<ISkenario>[] => [
+const getColumnsAdmin = (onDelete: (id: string) => void): ColumnDef<ISkenario>[] => [
     {
         accessorKey: "name",
         header: "Nama Skenario"
@@ -46,14 +47,35 @@ const getColumns = (onDelete: (id: string) => void): ColumnDef<ISkenario>[] => [
     {
         id: "actions",
         cell: ({row}) => <ActionUpdateDelete id={row.original.id}
-                                             onDelete={onDelete} items={[{name: "Plot Skenario", href: `/skenarios/plot/${row.original.id}`}]}/>,
+                                             onDelete={onDelete} items={[{
+            name: "Plot Skenario",
+            href: `/skenarios/plot/${row.original.id}`
+        }]}/>,
+    }
+];
+
+const getColumns = (): ColumnDef<ISkenario>[] => [
+    {
+        accessorKey: "name",
+        header: "Nama Skenario"
+    },
+    {
+        id: "actions",
+        cell: ({row}) => <ActionUpdateDelete id={row.original.id}
+                                             items={[{
+                                                 name: "Plot Skenario",
+                                                 href: `/skenarios/plot/${row.original.id}`
+                                             }]}/>,
     }
 ];
 
 const SkenarioPage = () => {
 
+    const user = useIdentify();
+
     const {operasiId} = useParams();
     const [breadcums, setBreadcums] = useState<IBreadcum[]>([]);
+    const [isAdmin, setIsAdmin] = useState(false);
 
 
     const getOperasi = async (id: string | undefined) => {
@@ -76,6 +98,13 @@ const SkenarioPage = () => {
 
 
     useEffect(() => {
+        if (user) {
+            if (user.user?.user.role === "admin") {
+                setIsAdmin(true);
+            } else {
+                setIsAdmin(false);
+            }
+        }
         getOperasi(operasiId);
     }, []);
 
@@ -96,7 +125,8 @@ const SkenarioPage = () => {
 
     }
 
-    const columns = getColumns(handleDelete);
+    const columnsAdmin = getColumnsAdmin(handleDelete);
+    const columns = getColumns();
 
     const items: ISkenario[] = data?.data;
 
@@ -107,17 +137,20 @@ const SkenarioPage = () => {
                 <AppBreadcum breadcums={breadcums}/>
 
                 <div className="flex items-center justify-between mt-4">
-                    <Link to={`/skenarios/create/${operasiId}`}>
-                        <Button className="cursor-pointer">
-                            <Plus/>
-                            New Skenario
-                        </Button>
-                    </Link>
+                    {isAdmin && (
+                        <Link to={`/skenarios/create/${operasiId}`}>
+                            <Button className="cursor-pointer">
+                                <Plus/>
+                                New Skenario
+                            </Button>
+                        </Link>
+                    )}
+
 
                 </div>
                 {isPending ? <AppLoading/> : error ? <AppError error={error}/> : (
                     <div className="mt-4 flex flex-col gap-4">
-                        <DataTable columns={columns} data={items || []}/>
+                        <DataTable columns={isAdmin ? columnsAdmin : columns} data={items || []}/>
                     </div>
                 )}
             </div>

@@ -3,6 +3,7 @@ import {ACCESS_TOKEN, REFRESH_TOKEN} from "@/utils/constants.ts";
 import axiosInstance from "@/utils/axiosInstance.ts";
 import {API_PATHS} from "@/utils/apiPaths.ts";
 import {useNavigate} from "react-router-dom";
+import type {IBaseModel} from "@/utils/items.ts";
 
 interface User {
     user: {
@@ -13,6 +14,7 @@ interface User {
         profile_img: string;
         created_at: string;
         updated_at: string;
+        units: IBaseModel[]
     };
     access_token: string
     refresh_token: string

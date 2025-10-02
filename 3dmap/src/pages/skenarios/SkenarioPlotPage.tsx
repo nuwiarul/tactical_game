@@ -32,11 +32,17 @@ import AddBuildingSheet from "@/pages/skenarios/AddBuildingSheet.tsx";
 import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
 import EditBuildingPropertiesSheet from "@/pages/skenarios/EditBuildingPropertiesSheet.tsx";
 import * as THREE from "three";
-import {getBuildings} from "@/helpers/games.ts";
+import {checkMove, getBuildings} from "@/helpers/games.ts";
 import EditScaleSheet from "@/pages/skenarios/EditScaleSheet.tsx";
 import EditRotasiSheet from "@/pages/skenarios/EditRotasiSheet.tsx";
+import AddAlurSheet from "@/pages/skenarios/AddAlurSheet.tsx";
+import {useIdentify} from "@/context/AuthProvider.tsx";
+import type {IBaseModel} from "@/utils/items.ts";
+import AddUnitUserSheet from "@/pages/skenarios/AddUnitUserSheet.tsx";
 
 const SkenarioPlotPage = () => {
+
+    const user = useIdentify();
 
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<Map>(null);
@@ -45,6 +51,8 @@ const SkenarioPlotPage = () => {
     const modelControlInstance = useRef<ModelControl | null>(null);
     const threeLayerInstance = useRef<ThreeLayer>(null);
     const contextMenuRef = useRef<HTMLDivElement | null>(null);
+    const unitsInstance = useRef<IBaseModel[]>([]);
+    const unitRoleInstance = useRef("");
 
     const {id} = useParams();
 
@@ -83,6 +91,9 @@ const SkenarioPlotPage = () => {
     const [openUpdateBuilding, setOpenUpdateBuilding] = useState(false);
     const [openEditScale, setOpenEditScale] = useState(false);
     const [openEditRotasi, setOpenEditRotasi] = useState(false);
+    const [openAddAlur, setOpenAddAlur] = useState(false);
+    const [userUnits, setUserUnits] = useState<IBaseModel[]>([]);
+    const [openAddUserUnit, setOpenAddUserUnit] = useState(false);
 
     const initMap = (valName: string, valOperasiName: string, valOperasiId: string, valCenterX:number, valCenterY: number, valZoom: number, valPitch: number) => {
         if (!initialized.current && mapRef.current) {
@@ -112,19 +123,32 @@ const SkenarioPlotPage = () => {
                 'closeButton'   : false
             });
             mapInstance.current.addControl(textPanel);
-            new control.Toolbar({
-                position: {top: 80, right: 20},
-                items: [{
-                    item: '<svg class="w-6 h-6 text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">\n' +
-                        '  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13v-2a1 1 0 0 0-1-1h-.757l-.707-1.707.535-.536a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0l-.536.535L14 4.757V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v.757l-1.707.707-.536-.535a1 1 0 0 0-1.414 0L4.929 6.343a1 1 0 0 0 0 1.414l.536.536L4.757 10H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.757l.707 1.707-.535.536a1 1 0 0 0 0 1.414l1.414 1.414a1 1 0 0 0 1.414 0l.536-.535 1.707.707V20a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-.757l1.707-.708.536.536a1 1 0 0 0 1.414 0l1.414-1.414a1 1 0 0 0 0-1.414l-.535-.536.707-1.707H20a1 1 0 0 0 1-1Z"/>\n' +
-                        '  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>\n' +
-                        '</svg>\n',
-                    click: function() {
-                        setOpenMapSetting(true)
-                    }
-                }]
-            }).addTo(mapInstance.current)
 
+            if (unitRoleInstance.current === "admin") {
+                new control.Toolbar({
+                    position: {top: 80, right: 20},
+                    vertical: true,
+                    items: [{
+                        /*
+                        item: '<svg class="w-6 h-6 text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">\n' +
+                            '  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13v-2a1 1 0 0 0-1-1h-.757l-.707-1.707.535-.536a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0l-.536.535L14 4.757V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v.757l-1.707.707-.536-.535a1 1 0 0 0-1.414 0L4.929 6.343a1 1 0 0 0 0 1.414l.536.536L4.757 10H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.757l.707 1.707-.535.536a1 1 0 0 0 0 1.414l1.414 1.414a1 1 0 0 0 1.414 0l.536-.535 1.707.707V20a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-.757l1.707-.708.536.536a1 1 0 0 0 1.414 0l1.414-1.414a1 1 0 0 0 0-1.414l-.535-.536.707-1.707H20a1 1 0 0 0 1-1Z"/>\n' +
+                            '  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>\n' +
+                            '</svg>\n',
+
+                         */
+                        item: 'Map Settings',
+                        click: function() {
+                            setOpenMapSetting(true)
+                        }
+                    }, {
+                        item: 'Tambah Alur',
+                        click: function () {
+                            setOpenAddAlur(true);
+                            //drawToolInstance.current?.enable();
+                        }
+                    }]
+                }).addTo(mapInstance.current)
+            }
             mapInstance.current.on('moving moveend zooming zoomend pitch pitchend', (param) => {
                 if (param) {
                     if (param.type === 'zooming' || param.type === 'zoomend') {
@@ -148,12 +172,17 @@ const SkenarioPlotPage = () => {
             }).addTo(mapInstance.current).disable();
 
             drawToolInstance.current?.on('drawend', function (param) {
-                console.log(param);
+                //console.log(param);
                 if (param) {
                     if (param.geometry.type === 'Point') {
                         setPosX(param.coordinate.x);
                         setPosY(param.coordinate.y);
-                        setOpenAddUnit(true);
+                        if (unitRoleInstance.current === "admin") {
+                            setOpenAddUnit(true);
+                        } else {
+                            setOpenAddUserUnit(true);
+                        }
+
                     } else if (param.geometry.type === 'Polygon') {
                         console.log(param.geometry.getCoordinates())
                         setBuildingGeom(JSON.stringify(param.geometry.getCoordinates()));
@@ -242,6 +271,7 @@ const SkenarioPlotPage = () => {
                             editRotasi: editRotasi,
                             editProperties: editProperties,
                             deleteObject: deleteObject,
+                            isPlot: checkMove(item.unit_id, unitsInstance.current, unitRoleInstance.current)
                         })
                     }
                 })
@@ -332,7 +362,18 @@ const SkenarioPlotPage = () => {
     }
 
     useEffect(() => {
-        getSkenario(id);
+        //getSkenario(id);
+        if (user) {
+            //console.log(user.user?.user);
+            unitsInstance.current = user.user?.user.units as IBaseModel[]
+            if (user.user?.user.units[0].id === "all") {
+                unitRoleInstance.current = "admin"
+            } else {
+                setUserUnits(user.user?.user.units as IBaseModel[]);
+                unitRoleInstance.current = "user"
+            }
+            getSkenario(id);
+        }
     }, []);
 
     const editGeom =  (marker: GLTFMarker, id: string) => {
@@ -409,7 +450,12 @@ const SkenarioPlotPage = () => {
     }
 
     const handleAddUnit = (addUnit: IUnit) => {
-        setOpenAddUnit(false);
+        if (unitRoleInstance.current === "admin") {
+            setOpenAddUnit(false);
+        } else {
+            setOpenAddUserUnit(false);
+        }
+
         if (mapInstance.current) {
             const gltfLayer = getGltfLayerWithGroup(mapInstance.current, 'gltf');
             const iconlayer = getGltfLayerWithGroup(mapInstance.current, 'icon');
@@ -532,6 +578,15 @@ const SkenarioPlotPage = () => {
                 operasiId={operasiId} close={() => setOpenAddUnit(false)}
                 addUnit={handleAddUnit}
             />
+            <AddUnitUserSheet
+                open={openAddUserUnit}
+                posX={posX}
+                posY={posY}
+                skenarioId={id as string}
+                units={userUnits}
+                operasiId={operasiId} close={() => setOpenAddUserUnit(false)}
+                addUnit={handleAddUnit}
+            />
             <AddBuildingSheet
                 open={openAddBuilding}
                 geom={buildingGeom}
@@ -539,6 +594,12 @@ const SkenarioPlotPage = () => {
                 operasiId={operasiId}
                 close={() => setOpenAddBuilding(false)}
                 addBuilding={handleAddBuilding}
+            />
+            <AddAlurSheet
+                open={openAddAlur}
+                setOpen={setOpenAddAlur}
+                skenarioId={id as string}
+                operasiId={operasiId}
             />
             <EditGeomSheet
                 open={openEditGeom}

@@ -1,5 +1,5 @@
 import PublicLayout from "@/layouts/PublicLayout.tsx";
-import {useEffect, useRef} from "react";
+import {useEffect, useRef, useState} from "react";
 import {control, GLTFLayer, GLTFMarker, Map, type TileLayer} from "maptalks-gl";
 import {
     createBaseLayerSwitcher,
@@ -13,13 +13,14 @@ import {Centrifuge} from "centrifuge";
 import {API_PATHS, CENTRIFUGO_URL} from "@/utils/apiPaths";
 import {useEffectOnce} from "react-use";
 import {createHomeBaseObject, getUnit, type IBuildingProperties, type IObjectProperties} from "@/helpers/objects.ts";
-import type {IUnit} from "@/helpers/type.data.ts";
+import type {IAlur, IUnit} from "@/helpers/type.data.ts";
 import axiosInstance from "@/utils/axiosInstance.ts";
 import {consoleErrorApi} from "@/helpers/logs.ts";
 import {formatRouteData, RoutePlayer} from "maptalks.routeplayer";
-import {removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
+import {getAlurs, removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
 import type {ThreeLayer} from "maptalks.three";
 import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
+import AlurSheet from "@/components/AlurSheet.tsx";
 
 
 const HomeIndex = () => {
@@ -33,6 +34,9 @@ const HomeIndex = () => {
     const satelliteLayerInstance = useRef<TileLayer>(null);
     const threeLayerInstance = useRef<ThreeLayer>(null);
     const buildingInstance = useRef<ExtrudePolygon[]>([]);
+
+    const [openAlur, setOpenAlur] = useState(false);
+    const [listAlurs, setListAlurs] = useState<IAlur[]>([]);
 
     useEffect(() => {
         if (!initialized.current && mapRef.current) {
@@ -172,6 +176,11 @@ const HomeIndex = () => {
                     response.data.data.zoom,
                     response.data.data.pitch
                 );
+
+                await getAlurs(id as string, (rows: IAlur[]) => {
+                    setListAlurs(rows);
+                });
+
             }
 
         } catch (error) {
@@ -219,6 +228,10 @@ const HomeIndex = () => {
         }
 
 
+    }
+
+    const alur = (value: boolean) => {
+        setOpenAlur(value);
     }
 
     const rot = (data: string, marker_id: string) => {
@@ -349,6 +362,10 @@ const HomeIndex = () => {
                 infoBuilding(data.command, data.marker_id);
             } else if (data.command === "CHANGE") {
                 changeLayer(data.data);
+            } else if (data.command === "OPEN_ALUR") {
+                alur(true);
+            } else if (data.command === "CLOSE_ALUR") {
+                alur(false);
             }
         });
 
@@ -383,6 +400,7 @@ const HomeIndex = () => {
     return (
         <PublicLayout>
             <div ref={mapRef} className="w-screen h-full"></div>
+            <AlurSheet open={openAlur} setOpen={setOpenAlur} rows={listAlurs} />
         </PublicLayout>
     );
 };

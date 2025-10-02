@@ -37,13 +37,37 @@ export interface IBuildingProperties {
 
 export const createBaseObject = (
     gltfLayer: GLTFLayer, iconLayer: GLTFLayer, modelControl: ModelControl,
-    {url, center, height, rotation, animation, name, id, unit_id, description, icon, child, keterangan, jumlah,
-        editGeom, editProperties, deleteObject, isMove = true, callbackinfo, dragable = false, callbackdrag, scale = 1, editScale, editRotasi}:
     {
-        url:string,
+        url,
+        center,
+        height,
+        rotation,
+        animation,
+        name,
+        id,
+        unit_id,
+        description,
+        icon,
+        child,
+        keterangan,
+        jumlah,
+        editGeom,
+        editProperties,
+        deleteObject,
+        isMove = true,
+        callbackinfo,
+        dragable = false,
+        callbackdrag,
+        scale = 1,
+        editScale,
+        editRotasi,
+        isPlot = true
+    }:
+    {
+        url: string,
         center: number[],
         height: number,
-        rotation: {x:number, y:number, z: number},
+        rotation: { x: number, y: number, z: number },
         animation: boolean,
         name: string,
         id: string,
@@ -60,6 +84,7 @@ export const createBaseObject = (
         editProperties?: (id: string, jumlah: number, name: string, keterangan: string, marker: GLTFMarker) => void,
         deleteObject?: (id: string, marker: GLTFMarker) => void,
         isMove?: boolean,
+        isPlot?: boolean,
         callbackinfo?: (id: string, command: string) => void,
         callbackdrag?: (id: string, command: string, data: string) => void,
         dragable?: boolean,
@@ -76,11 +101,11 @@ export const createBaseObject = (
             animation: animation,
             loop: animation,
             animationName: "Idle|Idle",
-            uniforms : {
-                lightDirection : [1, 1, 1],
+            uniforms: {
+                lightDirection: [1, 1, 1],
                 materialShininess: 32,
-                ambientStrength : 0.5,
-                specularStrength : 1.0,
+                ambientStrength: 0.5,
+                specularStrength: 1.0,
                 lightAmbient: [1.0, 1.0, 1.0],
                 lightDiffuse: [1.0, 1.0, 1.0],
                 lightSpecular: [1.0, 1.0, 1.0]
@@ -131,59 +156,74 @@ export const createBaseObject = (
 
     const menus = [];
 
-    if (isMove) {
-        menus.push({ item: `Move & Rotate ${modelControl.isScale ? "& Scale" : ""}`, click: () => {
+    if (isPlot) {
+        if (isMove) {
+            menus.push({
+                item: `Move & Rotate ${modelControl.isScale ? "& Scale" : ""}`, click: () => {
 
-                const model = modelControl.getModel();
-                if (model) {
-                    //model.config('draggable', false);
-                    if (model.getAnimations()) {
-                        model.setCurrentAnimation("Idle|Idle");
+                    const model = modelControl.getModel();
+                    if (model) {
+                        //model.config('draggable', false);
+                        if (model.getAnimations()) {
+                            model.setCurrentAnimation("Idle|Idle");
+                        }
                     }
+
+                    gltfMarker.config('draggable', true);
+                    modelControl.setModel(gltfMarker);
+
+                    if (modelControl.isScale) {
+                        modelControl.setOriginalScale(gltfMarker.getScale()[0]);
+                    }
+
+                    modelControl.enable();
+                    console.log(modelControl)
                 }
+            })
+        }
 
-                gltfMarker.config('draggable', true);
-                modelControl.setModel(gltfMarker);
-
-                if (modelControl.isScale) {
-                    modelControl.setOriginalScale(gltfMarker.getScale()[0]);
-                }
-
-                modelControl.enable();
-                console.log(modelControl)
-            }})
-    }
-
-    if (editGeom) {
-        menus.push({ item: 'Edit Posisi dan Rotasi', click: () => {
+        if (editGeom) {
+            menus.push({
+                item: 'Edit Posisi dan Rotasi', click: () => {
                     editGeom(gltfMarker, id);
-            }});
+                }
+            });
 
+        }
+
+        if (editScale) {
+            menus.push({
+                item: 'Edit Scale', click: () => {
+                    editScale(gltfMarker, id);
+                }
+            });
+        }
+
+        if (editRotasi) {
+            menus.push({
+                item: 'Edit Rotasi', click: () => {
+                    editRotasi(gltfMarker, id);
+                }
+            });
+        }
+
+        if (editProperties) {
+            menus.push({
+                item: 'Edit Keterangan', click: () => {
+                    editProperties(id, jumlah || 0, name, keterangan || "", gltfMarker);
+                }
+            });
+        }
+
+        if (deleteObject) {
+            menus.push({
+                item: 'Hapus', click: () => {
+                    deleteObject(id, gltfMarker);
+                }
+            });
+        }
     }
 
-    if (editScale) {
-        menus.push({ item: 'Edit Scale', click: () => {
-                editScale(gltfMarker, id);
-            }});
-    }
-
-    if (editRotasi) {
-        menus.push({ item: 'Edit Rotasi', click: () => {
-                editRotasi(gltfMarker, id);
-            }});
-    }
-
-    if (editProperties) {
-        menus.push({ item: 'Edit Keterangan', click: () => {
-            editProperties(id, jumlah || 0, name, keterangan || "", gltfMarker);
-        }});
-    }
-
-    if (deleteObject) {
-        menus.push({ item: 'Hapus', click: () => {
-            deleteObject(id, gltfMarker);
-        }});
-    }
 
     if (menus.length > 0) {
         gltfMarker.setMenu({
@@ -194,7 +234,7 @@ export const createBaseObject = (
 
     if (icon) {
         const iconMarker = new GLTFMarker([center[0], center[1], gltfMarker.getModelHeight()], {
-            symbol : {
+            symbol: {
                 url: icon,
                 modelHeight: 7,
                 rotationZ: rotation.z,
@@ -205,7 +245,7 @@ export const createBaseObject = (
     }
 
     if (child) {
-        const childMarker = new GLTFMarker([center[0] , center[1] + child.space], {
+        const childMarker = new GLTFMarker([center[0], center[1] + child.space], {
             symbol: {
                 url: child.modelUrl,
                 modelHeight: child.height,
@@ -214,11 +254,11 @@ export const createBaseObject = (
                 animation: child.animation,
                 loop: child.animation,
                 animationName: "Idle|Idle",
-                uniforms : {
-                    lightDirection : [1, 1, 1],
+                uniforms: {
+                    lightDirection: [1, 1, 1],
                     materialShininess: 32,
-                    ambientStrength : 0.5,
-                    specularStrength : 1.0,
+                    ambientStrength: 0.5,
+                    specularStrength: 1.0,
                     lightAmbient: [1.0, 1.0, 1.0],
                     lightDiffuse: [1.0, 1.0, 1.0],
                     lightSpecular: [1.0, 1.0, 1.0]
@@ -232,19 +272,33 @@ export const createBaseObject = (
     }
 
 
-
     gltfMarker.setProperties(properties)
     return gltfMarker
 }
 
 export const createHomeBaseObject = (
     gltfLayer: GLTFLayer, iconLayer: GLTFLayer,
-    {url, center, height, rotation, animation, name, id, unit_id, description, icon, child, keterangan, jumlah, scale = 1}:
     {
-        url:string,
+        url,
+        center,
+        height,
+        rotation,
+        animation,
+        name,
+        id,
+        unit_id,
+        description,
+        icon,
+        child,
+        keterangan,
+        jumlah,
+        scale = 1
+    }:
+    {
+        url: string,
         center: number[],
         height: number,
-        rotation: {x:number, y:number, z: number},
+        rotation: { x: number, y: number, z: number },
         animation: boolean,
         name: string,
         id: string,
@@ -271,11 +325,11 @@ export const createHomeBaseObject = (
             animation: animation,
             loop: animation,
             animationName: "Idle|Idle",
-            uniforms : {
-                lightDirection : [1, 1, 1],
+            uniforms: {
+                lightDirection: [1, 1, 1],
                 materialShininess: 32,
-                ambientStrength : 0.5,
-                specularStrength : 1.0,
+                ambientStrength: 0.5,
+                specularStrength: 1.0,
                 lightAmbient: [1.0, 1.0, 1.0],
                 lightDiffuse: [1.0, 1.0, 1.0],
                 lightSpecular: [1.0, 1.0, 1.0]
@@ -303,7 +357,7 @@ export const createHomeBaseObject = (
 
     if (icon) {
         const iconMarker = new GLTFMarker([center[0], center[1], gltfMarker.getModelHeight()], {
-            symbol : {
+            symbol: {
                 url: icon,
                 modelHeight: 7,
                 rotationZ: rotation.z,
@@ -314,7 +368,7 @@ export const createHomeBaseObject = (
     }
 
     if (child) {
-        const childMarker = new GLTFMarker([center[0] , center[1] + child.space], {
+        const childMarker = new GLTFMarker([center[0], center[1] + child.space], {
             symbol: {
                 url: child.modelUrl,
                 modelHeight: child.height,
@@ -323,11 +377,11 @@ export const createHomeBaseObject = (
                 animation: child.animation,
                 loop: child.animation,
                 animationName: "Idle|Idle",
-                uniforms : {
-                    lightDirection : [1, 1, 1],
+                uniforms: {
+                    lightDirection: [1, 1, 1],
                     materialShininess: 32,
-                    ambientStrength : 0.5,
-                    specularStrength : 1.0,
+                    ambientStrength: 0.5,
+                    specularStrength: 1.0,
                     lightAmbient: [1.0, 1.0, 1.0],
                     lightDiffuse: [1.0, 1.0, 1.0],
                     lightSpecular: [1.0, 1.0, 1.0]
@@ -346,7 +400,7 @@ export const createHomeBaseObject = (
 
 
 export const getUnit = (kategori: string, id: string) => {
-    let units :  IBaseModel[] = [];
+    let units: IBaseModel[] = [];
     if (kategori === 'unit') {
         units = UNITS;
     } else if (kategori === 'stackholder') {
@@ -364,7 +418,7 @@ export const getUnit = (kategori: string, id: string) => {
     for (let i = 0; i < units.length; i++) {
         const item = units[i];
         if (item.id === id) {
-           return item;
+            return item;
         }
     }
 
@@ -374,7 +428,7 @@ export const getUnit = (kategori: string, id: string) => {
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 const addBuildingContextMenu = (e, editProperties: () => void,
-                                deleteObject: () => void, ) => {
+                                deleteObject: () => void,) => {
     e.domEvent.preventDefault();
 
 
@@ -437,7 +491,7 @@ export const createBuilding = (layer: ThreeLayer, {
 
     const polygon = new Polygon(coordinates);
 
-    const material = new THREE.MeshPhongMaterial({ color: color });
+    const material = new THREE.MeshPhongMaterial({color: color});
     const mesh = layer.toExtrudePolygon(polygon, {height: height, topColor: color}, material);
     layer.addMesh(mesh);
     const properties: IBuildingProperties = {
@@ -467,9 +521,9 @@ export const createBuilding = (layer: ThreeLayer, {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         mesh.on('contextmenu', function (e) {
-            addBuildingContextMenu(e,  () => {
+            addBuildingContextMenu(e, () => {
                 editProperties(id, name, keterangan, height, color, mesh);
-            },  () => {
+            }, () => {
                 deleteObject(id, mesh)
             });
         })

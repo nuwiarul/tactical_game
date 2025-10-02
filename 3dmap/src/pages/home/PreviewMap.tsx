@@ -14,12 +14,13 @@ import {createHomeBaseObject, getUnit, type IObjectProperties} from "@/helpers/o
 import axiosInstance from "@/utils/axiosInstance.ts";
 import {API_PATHS} from "@/utils/apiPaths.ts";
 import {consoleErrorApi} from "@/helpers/logs.ts";
-import type {IUnit} from "@/helpers/type.data.ts";
+import type {IAlur, IUnit} from "@/helpers/type.data.ts";
 import type {IHomeOperasi} from "@/pages/home/ListOperasi.tsx";
 import ListSkenarioSheet from "@/components/ListSkenarioSheet.tsx";
-import {removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
+import {getAlurs, removeBuildings, removeGltfMarkersHelper} from "@/helpers/games.ts";
 import type {ThreeLayer} from "maptalks.three";
 import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
+import AlurSheet from "@/components/AlurSheet.tsx";
 
 
 const PreviewMap = () => {
@@ -38,6 +39,8 @@ const PreviewMap = () => {
 
     const [openListSkenario, setOpenListSkenario] = useState(false);
     const [homeOperasis, setHomeOperasis] = useState<IHomeOperasi | null>(null)
+    const [openAlur, setOpenAlur] = useState(false);
+    const [listAlurs, setListAlurs] = useState<IAlur[]>([]);
 
     const removeGltfMarkers = (id: string) => {
         const callbackRemoveGltf=  () => {
@@ -123,6 +126,12 @@ const PreviewMap = () => {
                     click: function () {
                         setOpenListSkenario(true)
                     }
+                },{
+                    item: 'List Alur',
+                    click: function () {
+                        setOpenAlur(true);
+                    },
+
                 }, {
                     item: 'Last Positions',
                     click: function () {
@@ -197,8 +206,11 @@ const PreviewMap = () => {
         }
     }
 
+
+
     const getSkenario = async (id: string | undefined) => {
         skenarioIdInstance.current = id as string;
+
         try {
             const response = await axiosInstance.get(API_PATHS.SKENARIOS.GET(id as string))
             if (response.data.data) {
@@ -223,6 +235,9 @@ const PreviewMap = () => {
                         );
                     }
                 }
+                await getAlurs(id as string, (rows: IAlur[]) => {
+                    setListAlurs(rows);
+                });
             }
 
         } catch (error) {
@@ -320,6 +335,7 @@ const PreviewMap = () => {
             <div ref={mapRef} className="w-screen h-full"></div>
             <ListSkenarioSheet open={openListSkenario} operasi={homeOperasis} setOpen={setOpenListSkenario}
                                handleSkenarioChange={handleSkenarioChange}/>
+            <AlurSheet open={openAlur} setOpen={setOpenAlur} rows={listAlurs} />
         </PublicLayout>
     )
 };

@@ -13,9 +13,9 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (name, username, password, role, profile_img)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, name, username, password, role, unit_id, profile_img, created_at, updated_at
+INSERT INTO users (name, username, password, role, profile_img, units)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, name, username, password, role, unit_id, profile_img, created_at, updated_at, units
 `
 
 type CreateUserParams struct {
@@ -24,6 +24,7 @@ type CreateUserParams struct {
 	Password   pgtype.Text `json:"password"`
 	Role       pgtype.Text `json:"role"`
 	ProfileImg pgtype.Text `json:"profile_img"`
+	Units      pgtype.Text `json:"units"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -33,6 +34,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		arg.Password,
 		arg.Role,
 		arg.ProfileImg,
+		arg.Units,
 	)
 	var i User
 	err := row.Scan(
@@ -45,13 +47,111 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.ProfileImg,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Units,
 	)
 	return i, err
 }
 
+const deleteUsers = `-- name: DeleteUsers :exec
+DELETE FROM users
+WHERE id=$1
+`
+
+func (q *Queries) DeleteUsers(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteUsers, id)
+	return err
+}
+
+const getUser = `-- name: GetUser :one
+SELECT
+    id, name, username, password, role, profile_img, units, created_at, updated_at
+FROM
+    users
+WHERE id=$1
+`
+
+type GetUserRow struct {
+	ID         uuid.UUID        `json:"id"`
+	Name       pgtype.Text      `json:"name"`
+	Username   pgtype.Text      `json:"username"`
+	Password   pgtype.Text      `json:"password"`
+	Role       pgtype.Text      `json:"role"`
+	ProfileImg pgtype.Text      `json:"profile_img"`
+	Units      pgtype.Text      `json:"units"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (GetUserRow, error) {
+	row := q.db.QueryRow(ctx, getUser, id)
+	var i GetUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Username,
+		&i.Password,
+		&i.Role,
+		&i.ProfileImg,
+		&i.Units,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT
+    id, name, username, password, role, profile_img, units, created_at, updated_at
+FROM
+    users
+WHERE role!='admin'
+`
+
+type ListUsersRow struct {
+	ID         uuid.UUID        `json:"id"`
+	Name       pgtype.Text      `json:"name"`
+	Username   pgtype.Text      `json:"username"`
+	Password   pgtype.Text      `json:"password"`
+	Role       pgtype.Text      `json:"role"`
+	ProfileImg pgtype.Text      `json:"profile_img"`
+	Units      pgtype.Text      `json:"units"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context) ([]ListUsersRow, error) {
+	rows, err := q.db.Query(ctx, listUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListUsersRow{}
+	for rows.Next() {
+		var i ListUsersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Username,
+			&i.Password,
+			&i.Role,
+			&i.ProfileImg,
+			&i.Units,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const selectUsers = `-- name: SelectUsers :one
 SELECT
-    id, name, username, password, role, profile_img, created_at, updated_at
+    id, name, username, password, role, profile_img, units, created_at, updated_at
 FROM
     users
 WHERE username=$1
@@ -65,6 +165,7 @@ type SelectUsersRow struct {
 	Password   pgtype.Text      `json:"password"`
 	Role       pgtype.Text      `json:"role"`
 	ProfileImg pgtype.Text      `json:"profile_img"`
+	Units      pgtype.Text      `json:"units"`
 	CreatedAt  pgtype.Timestamp `json:"created_at"`
 	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
 }
@@ -79,8 +180,44 @@ func (q *Queries) SelectUsers(ctx context.Context, username pgtype.Text) (Select
 		&i.Password,
 		&i.Role,
 		&i.ProfileImg,
+		&i.Units,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const updateUserUnit = `-- name: UpdateUserUnit :one
+UPDATE users
+SET
+    name = $1,
+    units = $2,
+    updated_at = NOW()
+WHERE
+    id = $3
+RETURNING id, name, username, password, role, unit_id, profile_img, created_at, updated_at, units
+`
+
+type UpdateUserUnitParams struct {
+	Name  pgtype.Text `json:"name"`
+	Units pgtype.Text `json:"units"`
+	ID    uuid.UUID   `json:"id"`
+}
+
+func (q *Queries) UpdateUserUnit(ctx context.Context, arg UpdateUserUnitParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserUnit, arg.Name, arg.Units, arg.ID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Username,
+		&i.Password,
+		&i.Role,
+		&i.UnitID,
+		&i.ProfileImg,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Units,
 	)
 	return i, err
 }

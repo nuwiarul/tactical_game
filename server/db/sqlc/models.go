@@ -9,6 +9,15 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Alur struct {
+	ID         uuid.UUID        `json:"id"`
+	OperasiID  pgtype.UUID      `json:"operasi_id"`
+	SkenarioID pgtype.UUID      `json:"skenario_id"`
+	Alur       pgtype.Text      `json:"alur"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+}
+
 type Building struct {
 	ID         uuid.UUID        `json:"id"`
 	OperasiID  pgtype.UUID      `json:"operasi_id"`
@@ -117,4 +126,5 @@ type User struct {
 	ProfileImg pgtype.Text      `json:"profile_img"`
 	CreatedAt  pgtype.Timestamp `json:"created_at"`
 	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+	Units      pgtype.Text      `json:"units"`
 }

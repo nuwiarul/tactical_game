@@ -1,11 +1,12 @@
 import {GLTFMarker, Map} from "maptalks-gl";
 import {createBuilding, type IObjectProperties} from "@/helpers/objects.ts";
-import type {IBuilding} from "@/helpers/type.data.ts";
+import type {IAlur, IBuilding} from "@/helpers/type.data.ts";
 import type {ThreeLayer} from "maptalks.three";
 import type ExtrudePolygon from "maptalks.three/dist/ExtrudePolygon";
 import axiosInstance from "@/utils/axiosInstance.ts";
 import {API_PATHS} from "@/utils/apiPaths.ts";
 import {consoleErrorApi} from "@/helpers/logs.ts";
+import type {IBaseModel} from "@/utils/items.ts";
 
 
 export const removeGltfMarkersHelper = (map: Map, markers: GLTFMarker[],  callback?: () => void) => {
@@ -96,6 +97,33 @@ export const getBuildings = async (
         }
     } catch (error) {
         consoleErrorApi(error, "Building");
+    }
+}
+
+export const getAlurs = async (id: string, callback: (rows: IAlur[]) => void)=> {
+    try {
+        const response = await axiosInstance.get(API_PATHS.ALURS.LIST(id))
+        if (response.data.data) {
+            callback(response.data.data);
+        } else {
+            callback([])
+        }
+    } catch (error) {
+        consoleErrorApi(error, "GetAlurs");
+        callback([])
+    }
+}
+
+export const checkMove = (id: string, items: IBaseModel[],  role: string) => {
+    if (role === "admin") {
+        return true;
+    } else {
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].id === id) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

@@ -2,7 +2,7 @@ import type {ColumnDef} from "@tanstack/react-table";
 import axiosInstance from "@/utils/axiosInstance.ts";
 import {API_PATHS} from "@/utils/apiPaths.ts";
 import ActionUpdateDelete from "@/components/ActionUpdateDelete";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {PAGE_SIZE} from "@/utils/constants.ts";
 import {useQuery} from "@tanstack/react-query";
 import {consoleErrorApi} from "@/helpers/logs.ts";
@@ -16,6 +16,7 @@ import AppLoading from "@/components/AppLoading.tsx";
 import AppError from "@/components/AppError.tsx";
 import {DataTable} from "@/components/DataTable.tsx";
 import DataTablePagination from "@/components/DataTablePagination.tsx";
+import {useIdentify} from "@/context/AuthProvider.tsx";
 
 type IOperasi = {
     id: string;
@@ -35,7 +36,7 @@ const paginateOperasis = async ({pageSize, pageNumber, search}: {
 }
 
 
-const getColumns = (onDelete: (id: string) => void): ColumnDef<IOperasi>[] => [
+const getColumnsAdmin = (onDelete: (id: string) => void): ColumnDef<IOperasi>[] => [
     {
         accessorKey: "name",
         header: "Nama Operasi"
@@ -49,11 +50,28 @@ const getColumns = (onDelete: (id: string) => void): ColumnDef<IOperasi>[] => [
     }
 ];
 
+const getColumns = (): ColumnDef<IOperasi>[] => [
+    {
+        accessorKey: "name",
+        header: "Nama Operasi"
+    },
+    {
+        id: "actions",
+        cell: ({row}) => <ActionUpdateDelete id={row.original.id}
+                                             name="Operasi" items={[
+            {name: "Skenarios", href: `/skenarios/${row.original.id}`},
+        ]}/>,
+    }
+];
+
 const OperasiPage = () => {
+
+    const user = useIdentify();
 
     const [pageNumber, setPageNumber] = useState(1);
     const [pageSize, setPageSize] = useState(PAGE_SIZE);
     const [search, setSearch] = useState("");
+    const [isAdmin, setIsAdmin] = useState(false);
 
 
     const {isPending, error, data, refetch} = useQuery({
@@ -72,10 +90,22 @@ const OperasiPage = () => {
 
     }
 
-    const columns = getColumns(handleDelete);
+    const columnsAdmin = getColumnsAdmin(handleDelete);
+    const columns = getColumns();
 
     const items: IOperasi[] = data?.data;
     const totalPage: number = Math.floor((data?.total + pageSize - 1) / pageSize) || 1;
+
+    useEffect(() => {
+        if (user) {
+            if (user.user?.user.role === "admin") {
+                setIsAdmin(true);
+            } else {
+                setIsAdmin(false);
+            }
+        }
+    }, []);
+
 
     return (
         <MainLayout activeMenu="operasis">
@@ -86,18 +116,17 @@ const OperasiPage = () => {
                 ]}/>
                 <div className="flex items-center justify-between mt-4">
                     <InputSearch setSearch={setSearch}/>
-                    <Link to="/operasis/create">
+                    {isAdmin && (<Link to="/operasis/create">
                         <Button className="cursor-pointer">
                             <Plus/>
                             New
                         </Button>
-                    </Link>
-
+                    </Link>)}
                 </div>
 
                 {isPending ? <AppLoading/> : error ? <AppError error={error}/> : (
                     <div className="mt-4 flex flex-col gap-4">
-                        <DataTable columns={columns} data={items || []}/>
+                        <DataTable columns={isAdmin ? columnsAdmin : columns} data={items || []}/>
                         <DataTablePagination
                             pageNumber={pageNumber}
                             setPageNumber={setPageNumber}

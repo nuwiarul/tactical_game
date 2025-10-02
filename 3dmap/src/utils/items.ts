@@ -22,6 +22,7 @@ export interface IBaseModel {
     },
     modelUrl: string,
     animation: boolean,
+    kategori: string,
     icon?: string,
     child?: IBaseChildModel,
 }
@@ -37,7 +38,8 @@ export const UNITS: IBaseModel[] = [
             z : 90,
         },
         modelUrl: "/polwan_anim.glb",
-        animation: true
+        animation: true,
+        kategori: "unit",
     },
     {
         id: "378c8b26-7303-4d43-b630-605e56af855c",
@@ -50,6 +52,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/k9.glb",
         animation: true,
+        kategori: "unit",
         /*
         child: {
             height: 8,
@@ -76,10 +79,11 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/dalmas_samapta_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "6790a969-153e-4170-8361-0e60fd18bfe8",
-        name: "Brimob Dalmas",
+        name: "Brimob PHH",
         height: 20,
         rotation: {
             x : 0,
@@ -88,6 +92,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/brimob_dalmas_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "a5cbfcf9-56c9-4b23-9d76-d747116b9bb6",
@@ -100,6 +105,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/polisi_dan_kuda_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "fcb902ba-b62c-4eba-8d15-365de142e39d",
@@ -112,6 +118,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/samapta_gas_mata_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "842733d8-8bce-41f7-9de3-275e5d030045",
@@ -124,6 +131,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/brimob_gas_mata_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "8977569e-ec3f-4ca1-b4d6-f80d8d5fb718",
@@ -136,6 +144,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/samapta_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "bf88d9fa-cc77-4205-9288-4d82825786e1",
@@ -148,6 +157,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/dokkes_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "2ed6ed39-7932-4ba1-80ff-5d04b998d9f3",
@@ -160,6 +170,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/humas_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "5256c5a3-8f45-4524-82fa-50db8f919ad8",
@@ -172,6 +183,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/intel_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "248e4a9a-7d54-4326-a0c0-d0a1d8f685d9",
@@ -184,6 +196,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/propam_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "b0af4fe8-2ead-4516-bc40-ad2485032858",
@@ -196,6 +209,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/brimob_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "1dd5a214-ecd9-4e14-a7dc-a2b4caa26939",
@@ -208,6 +222,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/lantas_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "8dafa497-4768-4363-8850-4ba009bb0cbd",
@@ -220,6 +235,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/babin_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "2aa7d793-ef1a-45b3-910e-d7cd0ffb6ca3",
@@ -232,6 +248,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/airud_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "a79df20a-7af5-4bd5-a461-19efff26a245",
@@ -244,6 +261,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/narkoba_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "9d5cfbf6-7a08-4431-b128-c086ef665be3",
@@ -256,6 +274,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/reskrim_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "55d3cc00-a233-40f7-b3f9-515d8948a40b",
@@ -268,6 +287,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/pamobvit_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "0974d442-3366-4ed2-b740-b6ae04696958",
@@ -280,6 +300,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/tik_anim.glb",
         animation: true,
+        kategori: "unit",
     },
     {
         id: "c8890baa-0b04-495c-8aa6-2cfb3a305049",
@@ -292,6 +313,7 @@ export const UNITS: IBaseModel[] = [
         },
         modelUrl: "/polwan_lantas_anim.glb",
         animation: true,
+        kategori: "unit",
     },
 ]
 
@@ -307,6 +329,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/motor_patwal_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "85d4a321-a06f-470b-b754-5aa2628a9fa3",
@@ -319,6 +342,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/motor_samapta_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "f75684db-454a-48c9-b9eb-eecfa7c64c88",
@@ -331,6 +355,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/motor_brimob_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "d79d3525-3ee4-4ebc-930c-04fac4de72a1",
@@ -343,6 +368,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/water_canon_brimob_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "27550855-9ea4-4b37-8b3e-6571524f3a5e",
@@ -355,6 +381,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/water_canon_samapta_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "3a0b057c-8859-44fa-87a2-a721e3c13887",
@@ -367,6 +394,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/rantis_brimob_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "82b1270b-6f21-46e2-9311-c526d1d2ccd9",
@@ -379,6 +407,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/mobil_damkar_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "639469ce-143e-4e73-a5f1-44921a7b9b0b",
@@ -391,6 +420,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/mobil_patwal_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "9bef92f2-1582-497c-b530-0bae79a59ca0",
@@ -403,6 +433,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/mobil_dokkes_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "c21b5766-9e82-42db-abcc-bb260af8d266",
@@ -415,6 +446,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/mobil_gegana_anim.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "70a63031-d042-4ce1-922b-e27d8c45bb14",
@@ -427,6 +459,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/public_address.glb",
         animation: true,
+        kategori: "ranmor",
     },
     {
         id: "ee8c0e58-7923-4493-a0c8-74aa2895b685",
@@ -439,6 +472,7 @@ export const KENDARAANS:  IBaseModel[] = [
         },
         modelUrl: "/mobil_samapta.glb",
         animation: true,
+        kategori: "ranmor",
     },
 ]
 
@@ -453,7 +487,8 @@ export const STACKHOLDERS: IBaseModel[] = [
             z: 90,
         },
         modelUrl: "/tni_ad_anim.glb",
-        animation: true
+        animation: true,
+        kategori: "stackholder",
     },
     {
         id: "1c63bbda-dc7f-4fe5-b157-d096efafb05f",
@@ -466,6 +501,7 @@ export const STACKHOLDERS: IBaseModel[] = [
         },
         modelUrl: "/damkar_anim.glb",
         animation: true,
+        kategori: "stackholder",
     },
     {
         id: "105996cb-a01f-462d-8421-118fbfd2bfc1",
@@ -478,6 +514,7 @@ export const STACKHOLDERS: IBaseModel[] = [
         },
         modelUrl: "/linmas_anim.glb",
         animation: true,
+        kategori: "stackholder",
     },
     {
         id: "ab97c99c-f389-43ae-95d3-22b20488a9e8",
@@ -490,6 +527,7 @@ export const STACKHOLDERS: IBaseModel[] = [
         },
         modelUrl: "/polpp_anim.glb",
         animation: true,
+        kategori: "stackholder",
     },
     {
         id: "36376f1b-4aee-4e9b-804e-729b9da2d3b5",
@@ -502,6 +540,7 @@ export const STACKHOLDERS: IBaseModel[] = [
         },
         modelUrl: "/sar_anim.glb",
         animation: true,
+        kategori: "stackholder",
     },
     {
         id: "75b238d3-8ca4-4ae7-9361-deb9ad41f862",
@@ -514,6 +553,7 @@ export const STACKHOLDERS: IBaseModel[] = [
         },
         modelUrl: "/dishub_anim.glb",
         animation: true,
+        kategori: "stackholder",
     },
     {
         id: "8ba6357b-0407-4871-86d5-9c6a6cb82e93",
@@ -526,6 +566,7 @@ export const STACKHOLDERS: IBaseModel[] = [
         },
         modelUrl: "/pecalang_anim.glb",
         animation: true,
+        kategori: "stackholder",
     },
 ]
 
@@ -541,6 +582,7 @@ export const PEOPLES: IBaseModel[] = [
         },
         modelUrl: "/perusuh_anim.glb",
         animation: true,
+        kategori: "people",
     },
     {
         id: "df211373-41c1-4200-9dd2-44b4760f8e54",
@@ -553,6 +595,7 @@ export const PEOPLES: IBaseModel[] = [
         },
         modelUrl: "/wanita_anim.glb",
         animation: true,
+        kategori: "people",
     },
     {
         id: "199ec2c7-d11a-4972-aaf3-5c2e8d274273",
@@ -565,6 +608,7 @@ export const PEOPLES: IBaseModel[] = [
         },
         modelUrl: "/masyarakat_anim.glb",
         animation: true,
+        kategori: "people",
     },
 ]
 
@@ -580,6 +624,7 @@ export const TOOLS: IBaseModel[] = [
         },
         modelUrl: "/barrier.glb",
         animation: false,
+        kategori: "alat",
     },
     {
         id: "c0edbc16-129d-4a42-9687-14a5f634ab0a",
@@ -592,6 +637,7 @@ export const TOOLS: IBaseModel[] = [
         },
         modelUrl: "/cone.glb",
         animation: false,
+        kategori: "alat",
     },
     {
         id: "dab0728f-a938-4170-8f7f-23f75503bb86",
@@ -604,6 +650,7 @@ export const TOOLS: IBaseModel[] = [
         },
         modelUrl: "/kawat_berduri.glb",
         animation: false,
+        kategori: "alat",
     },
 ]
 
@@ -619,6 +666,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/kantor_polisi.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "d02121e6-7a1e-49e3-9571-04b33c94a27b",
@@ -631,6 +679,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/kantor_pemerintah.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "7e5e3b3b-9b85-4703-b461-5850f360207d",
@@ -643,6 +692,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/bank.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "cc7847ff-d86b-4286-b273-059f7a3fece0",
@@ -655,6 +705,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/rumah_sakit.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "e9f77a3d-5fb9-44df-b0f7-0958535c5e19",
@@ -667,6 +718,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/rumah.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "1325beab-f7cb-4b62-9d6f-d8e255a8f8a5",
@@ -679,6 +731,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/pos_polisi.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "68ad0a79-160b-4747-978a-f5b2b2b8c352",
@@ -691,6 +744,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/hotel.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "fc54c3eb-fc1e-4f97-a420-053b607a43e3",
@@ -703,6 +757,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/apartemen.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "ba9d9fbf-343a-417e-a556-40529cac8917",
@@ -715,6 +770,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/pura.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "c47ce1ba-0a94-4e21-988b-0c16465df07f",
@@ -727,6 +783,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/gereja.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "e2fc0063-147c-4b67-9baa-05e9c6f3971b",
@@ -739,6 +796,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/gedung.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "d26a805b-846d-4f24-aa47-29f2675a6d8b",
@@ -751,6 +809,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/masjid.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "d9ed8342-a182-436e-b620-795e7eb19a4e",
@@ -763,6 +822,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/pospam_lebaran.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "3e1fd8d6-733d-4871-b700-bc5543eb9e62",
@@ -775,6 +835,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/pospam_natal.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "2ccbe0a4-793c-4707-87e6-3f4af2e6b558",
@@ -787,6 +848,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/pasar.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "2ccbe0a4-793c-4707-87e6-3f4af2e6b558",
@@ -799,6 +861,7 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/supermarket.glb",
         animation: false,
+        kategori: "bangunan",
     },
     {
         id: "37dd9fda-2d10-4f7a-9eb1-f89bd8466ec4",
@@ -811,5 +874,6 @@ export const BANGUNANS: IBaseModel[] = [
         },
         modelUrl: "/sekolah.glb",
         animation: false,
+        kategori: "bangunan",
     },
 ]

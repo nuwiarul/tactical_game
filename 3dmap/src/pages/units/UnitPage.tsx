@@ -1,4 +1,4 @@
-import {OrbitControls, PerspectiveCamera, Stage, useGLTF} from "@react-three/drei";
+import {OrbitControls, PerspectiveCamera, Stage} from "@react-three/drei";
 import {
     Dialog,
     DialogContent,
@@ -6,8 +6,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog.tsx";
-import {Canvas, useThree} from "@react-three/fiber";
-import {type ReactNode, Suspense, useEffect, useState} from "react";
+import {Canvas} from "@react-three/fiber";
+import {Suspense, useState} from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {Button} from "@/components/ui/button.tsx";
 import {BANGUNANS, type IBaseModel, KENDARAANS, PEOPLES, STACKHOLDERS, TOOLS, UNITS} from "@/utils/items.ts";
@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import {DataTableUnit} from "@/pages/units/DataTableUnit.tsx";
 import AppBreadcum from "@/components/AppBreadcum.tsx";
+import {BaseModel, DisposableCanvas} from "@/components/DisposableCanvas.tsx";
 
 interface ColumUnitProps {
     onZoom: (modelUrl: string, name: string) => void,
@@ -48,24 +49,7 @@ const getColumns = ({onZoom}: ColumUnitProps): ColumnDef<IBaseModel>[] => [
     },
 ];
 
-function BaseModel({url}: { url: string }) {
-    const gltf = useGLTF(url);
-    const model = gltf.scene;
-    model.rotation.y = Math.PI / -2;
-    return <primitive object={model}/>;
 
-}
-
-const DisposableCanvas = ({children}: {children: ReactNode}) => {
-    const {gl} = useThree();
-    useEffect(() => {
-        return () => {
-            gl.dispose();
-        };
-    }, [gl]);
-
-    return <>{children}</>;
-};
 
 const UnitPage = () => {
 

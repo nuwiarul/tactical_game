@@ -71,3 +71,33 @@ export interface IBuilding {
     created_at: string;
     updated_at: string;
 }
+
+export interface IAlur {
+    id: string;
+    alur: string;
+    operasi: {
+        id: string;
+        name: string;
+        created_at: string;
+        updated_at: string;
+    };
+    skenario: {
+        id: string;
+        name: string;
+        operasi: {
+            id: string;
+            name: string;
+            created_at: string;
+            updated_at: string;
+        };
+        center_x: number;
+        center_y: number;
+        zoom: number;
+        max_zoom: number;
+        pitch: number;
+        created_at: string;
+        updated_at: string;
+    };
+    created_at: string;
+    updated_at: string;
+}

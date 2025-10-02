@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -20,6 +21,18 @@ type User struct {
 	Username   string    `json:"username"`
 	Role       string    `json:"role"`
 	ProfileImg string    `json:"profile_img"`
+	Units      string    `json:"units"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+type UserIdentify struct {
+	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	Username   string    `json:"username"`
+	Role       string    `json:"role"`
+	ProfileImg string    `json:"profile_img"`
+	Units      []IUnit   `json:"units"`
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`
 }
@@ -38,11 +51,11 @@ type userSingleResponse struct {
 }
 
 type Login struct {
-	User                  User      `json:"user"`
-	AccessToken           string    `json:"access_token"`
-	RefreshToken          string    `json:"refresh_token"`
-	AccessTokenExpiresAt  time.Time `json:"access_token_expires_at"`
-	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
+	User                  UserIdentify `json:"user"`
+	AccessToken           string       `json:"access_token"`
+	RefreshToken          string       `json:"refresh_token"`
+	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
+	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
 }
 
 type userLoginResponse struct {
@@ -55,13 +68,33 @@ type userCreateRequest struct {
 	Name       string `json:"name" binding:"required"`
 	Username   string `json:"username" binding:"required,alphanum,min=4,username"`
 	Password   string `json:"password" binding:"required,min=8"`
+	Units      string `json:"units" binding:"required"`
 	Role       string `json:"role" binding:"required"`
 	ProfileImg string `json:"profile_img"`
+}
+
+type userUpdateRequest struct {
+	Name  string `json:"name" binding:"required"`
+	Units string `json:"units" binding:"required"`
 }
 
 type userLoginRequest struct {
 	Username string `json:"username" binding:"required,alphanum,min=4,username"`
 	Password string `json:"password" binding:"required,min=8"`
+}
+
+type IUnit struct {
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Height   int    `json:"height"`
+	Rotation struct {
+		X float64 `json:"x"`
+		Y float64 `json:"y"`
+		Z float64 `json:"z"`
+	} `json:"rotation"`
+	ModelUrl  string `json:"modelUrl"`
+	Animation bool   `json:"animation"`
+	Kategori  string `json:"kategori"`
 }
 
 func convertToUser(user db.SelectUsersRow) db.User {
@@ -73,12 +106,14 @@ func convertToUser(user db.SelectUsersRow) db.User {
 		ProfileImg: user.ProfileImg,
 		CreatedAt:  user.CreatedAt,
 		UpdatedAt:  user.UpdatedAt,
+		Units:      user.Units,
 	}
 }
 
-func getLoginResponse(user db.User, accessToken, refreshToken string, accessTokenExp, refreshTokenExp time.Time) Login {
-	return Login{
-		User: User{
+func getLoginResponse(user db.User, accessToken, refreshToken string, accessTokenExp, refreshTokenExp time.Time) (Login, error) {
+
+	login := Login{
+		User: UserIdentify{
 			ID:         user.ID,
 			Name:       user.Name.String,
 			Username:   user.Username.String,
@@ -93,6 +128,15 @@ func getLoginResponse(user db.User, accessToken, refreshToken string, accessToke
 		RefreshTokenExpiresAt: refreshTokenExp,
 	}
 
+	var data []IUnit
+	// 4. Proses Unmarshal: mengubah JSON (byte slice) ke struct
+	err := json.Unmarshal([]byte(user.Units.String), &data)
+	if err != nil {
+		return login, err
+	}
+
+	login.User.Units = data
+	return login, nil
 }
 
 func (server *Server) getIdentify(ctx *gin.Context) {
@@ -123,10 +167,17 @@ func (server *Server) getIdentify(ctx *gin.Context) {
 
 	user := convertToUser(selectUserRow)
 
+	loginResp, err := getLoginResponse(user, accessToken, refreshToken, accessPayload.ExpiresAt.Time, refreshPayload.ExpiresAt.Time)
+	if err != nil {
+		log.Error().Err(err).Msg("getIdentify")
+		ctx.JSON(http.StatusInternalServerError, serverInternalResponse(err))
+		return
+	}
+
 	resp := userLoginResponse{
 		Code:    http.StatusOK,
 		Message: "success",
-		Data:    getLoginResponse(user, accessToken, refreshToken, accessPayload.ExpiresAt.Time, refreshPayload.ExpiresAt.Time),
+		Data:    loginResp,
 	}
 
 	ctx.JSON(http.StatusOK, resp)
@@ -157,6 +208,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		Password:   db.ToText(hashPassword),
 		Role:       db.ToText(req.Role),
 		ProfileImg: db.ToText(req.ProfileImg),
+		Units:      db.ToText(req.Units),
 	})
 
 	if err != nil {
@@ -177,6 +229,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 			Name:       row.Name.String,
 			Username:   row.Username.String,
 			Role:       row.Role.String,
+			Units:      row.Units.String,
 			ProfileImg: row.ProfileImg.String,
 			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
 			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
@@ -228,12 +281,167 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	user := convertToUser(selectUserRow)
 
+	loginResp, err := getLoginResponse(user, accessToken, refreshToken, accessPayload.ExpiresAt.Time, refreshPayload.ExpiresAt.Time)
+	if err != nil {
+		log.Error().Err(err).Msg("getIdentify")
+		ctx.JSON(http.StatusInternalServerError, serverInternalResponse(err))
+		return
+	}
+
 	resp := userLoginResponse{
 		Code:    http.StatusOK,
 		Message: "success",
-		Data:    getLoginResponse(user, accessToken, refreshToken, accessPayload.ExpiresAt.Time, refreshPayload.ExpiresAt.Time),
+		Data:    loginResp,
 	}
 
 	ctx.JSON(http.StatusCreated, resp)
+
+}
+
+func (server *Server) listUsers(ctx *gin.Context) {
+
+	rows, err := server.store.ListUsers(ctx)
+
+	if err != nil {
+		log.Error().Err(err).Msg("listUsers")
+		ctx.JSON(http.StatusInternalServerError, serverInternalResponse(err))
+		return
+	}
+
+	var datas []User
+
+	for _, row := range rows {
+		datas = append(datas, User{
+			ID:         row.ID,
+			Name:       row.Name.String,
+			Role:       row.Role.String,
+			Username:   row.Username.String,
+			ProfileImg: row.ProfileImg.String,
+			Units:      row.Units.String,
+			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
+			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
+		})
+	}
+
+	resp := userListResponse{
+		Code:    http.StatusOK,
+		Message: "success",
+		Data:    datas,
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+
+}
+
+func (server *Server) getUser(ctx *gin.Context) {
+
+	//authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	id, err := uuid.Parse(ctx.Param("id"))
+
+	if err != nil {
+		log.Error().Err(err).Msg("getUser")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	row, err := server.store.GetUser(ctx, id)
+
+	if err != nil {
+		log.Error().Err(err).Msg("getUser")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	resp := userSingleResponse{
+		Code:    http.StatusOK,
+		Message: "success",
+		Data: User{
+			ID:         row.ID,
+			Name:       row.Name.String,
+			Role:       row.Role.String,
+			Username:   row.Username.String,
+			ProfileImg: row.ProfileImg.String,
+			Units:      row.Units.String,
+			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
+			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+
+}
+
+func (server *Server) updateUser(ctx *gin.Context) {
+
+	//authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	var req userUpdateRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Error().Err(err).Msg("updateUser")
+		ctx.JSON(http.StatusBadRequest, badRequestResponse(err))
+		return
+	}
+
+	id, err := uuid.Parse(ctx.Param("id"))
+
+	if err != nil {
+		log.Error().Err(err).Msg("updateUser")
+		ctx.JSON(http.StatusBadRequest, badRequestResponse(err))
+		return
+	}
+
+	row, err := server.store.UpdateUserUnit(ctx, db.UpdateUserUnitParams{
+		ID:    id,
+		Units: db.ToText(req.Units),
+		Name:  db.ToText(req.Name),
+	})
+
+	if err != nil {
+		log.Error().Err(err).Msg("updateUser")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	resp := userSingleResponse{
+		Code:    http.StatusOK,
+		Message: "success",
+		Data: User{
+			ID:         row.ID,
+			Name:       row.Name.String,
+			Role:       row.Role.String,
+			Username:   row.Username.String,
+			ProfileImg: row.ProfileImg.String,
+			Units:      row.Units.String,
+			CreatedAt:  utils.ToWitaTimezone(row.CreatedAt.Time),
+			UpdatedAt:  utils.ToWitaTimezone(row.UpdatedAt.Time),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+
+}
+
+func (server *Server) deleteUser(ctx *gin.Context) {
+
+	//authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	id, err := uuid.Parse(ctx.Param("id"))
+
+	if err != nil {
+		log.Error().Err(err).Msg("deleteUser")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	err = server.store.DeleteUsers(ctx, id)
+
+	if err != nil {
+		log.Error().Err(err).Msg("deleteUser")
+		ctx.JSON(http.StatusBadRequest, serverInternalResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, successResponse())
 
 }

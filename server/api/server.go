@@ -95,6 +95,7 @@ func (server *Server) setupRouter() {
 	publicGroup.GET("/skenarios/get/:id", server.getSkenarios)
 	publicGroup.GET("/markers/list/:skenario_id", server.listMarkers)
 	publicGroup.GET("/buildings/list/:skenario_id", server.listBuildings)
+	publicGroup.GET("/alurs/list/:skenario_id", server.listAlurs)
 	publicGroup.GET("/last_positions/:skenario_id", server.getLastPosition)
 	publicGroup.GET("/list/operasis", server.homeOperasis)
 	publicGroup.GET("/get/home/operasis/:id", server.getHomeOperasis)
@@ -107,8 +108,8 @@ func (server *Server) setupRouter() {
 	adminGroup.PUT("/categories/:id", server.updateCategories)
 	adminGroup.DELETE("/categories/:id", server.deleteCategories)
 
-	adminGroup.GET("/operasis", server.paginateOperasis).Use(authMiddleware(server.tokenMaker))
-	adminGroup.GET("/operasis/:id", server.getOperasis)
+	//adminGroup.GET("/operasis", server.paginateOperasis).Use(authMiddleware(server.tokenMaker))
+	//adminGroup.GET("/operasis/:id", server.getOperasis)
 	adminGroup.POST("/operasis", server.createOperasis)
 	adminGroup.PUT("/operasis/:id", server.updateOperasis)
 	adminGroup.DELETE("/operasis/:id", server.deleteOperasis)
@@ -120,6 +121,10 @@ func (server *Server) setupRouter() {
 	//categoryGroup := router.Group("/")
 
 	privateGroup := router.Group("/private").Use(authMiddleware(server.tokenMaker))
+
+	privateGroup.GET("/operasis", server.paginateOperasis)
+	privateGroup.GET("/operasis/:id", server.getOperasis)
+
 	privateGroup.POST("/upload-image", server.uploadImage)
 	privateGroup.GET("/identify", server.getIdentify)
 	privateGroup.GET("/categories/all", server.allCategories)
@@ -134,6 +139,17 @@ func (server *Server) setupRouter() {
 	privateGroup.POST("/buildings", server.createBuildings)
 	privateGroup.PUT("/buildings/:id", server.updateBuilding)
 	privateGroup.DELETE("/buildings/:id", server.deleteBuildings)
+
+	adminGroup.POST("/alurs", server.createAlurs)
+	adminGroup.PUT("/alurs/:id", server.updateAlur)
+	adminGroup.DELETE("/alurs/:id", server.deleteAlurs)
+
+	adminGroup.GET("/users", server.listUsers)
+	adminGroup.POST("/users", server.createUser)
+	adminGroup.PUT("/users/:id", server.updateUser)
+	adminGroup.DELETE("/users/:id", server.deleteUser)
+
+	privateGroup.GET("/users/:id", server.getUser)
 
 	//apiGroup.POST("/users", server.createUser)
 

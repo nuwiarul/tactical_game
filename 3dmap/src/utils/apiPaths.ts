@@ -18,9 +18,9 @@ export const API_PATHS = {
         ALL: '/private/categories/all',
     },
     OPERASIS : {
-        PAGINATE : ({pageSize, pageNumber, search} : {pageSize: number, pageNumber: number, search: string}) => `/admin/operasis?pageSize=${pageSize}&pageNumber=${pageNumber}&search=${search}`,
+        PAGINATE : ({pageSize, pageNumber, search} : {pageSize: number, pageNumber: number, search: string}) => `/private/operasis?pageSize=${pageSize}&pageNumber=${pageNumber}&search=${search}`,
         DELETE: (id: string) => `/admin/operasis/${id}`,
-        GET: (id: string) => `/admin/operasis/${id}`,
+        GET: (id: string) => `/private/operasis/${id}`,
         CREATE: '/admin/operasis',
         UPDATE: (id: string) => `/admin/operasis/${id}`,
         ALL: '/public/operasis/all',
@@ -48,6 +48,19 @@ export const API_PATHS = {
         LIST: (skenarioId: string) => `/public/buildings/list/${skenarioId}`,
         CREATE: '/private/buildings',
         UPDATE: (id: string) => `/private/buildings/${id}`,
+    },
+    ALURS : {
+        DELETE: (id: string) => `/admin/alurs/${id}`,
+        LIST: (skenarioId: string) => `/public/alurs/list/${skenarioId}`,
+        CREATE: '/admin/alurs',
+        UPDATE: (id: string) => `/admin/alurs/${id}`,
+    },
+    USERS : {
+        DELETE: (id: string) => `/admin/users/${id}`,
+        LIST: `/admin/users`,
+        CREATE: '/admin/users',
+        UPDATE: (id: string) => `/admin/users/${id}`,
+        GET: (id: string) => `/private/users/${id}`,
     },
     PROFILE: {
         IDENTIFY : "/private/identify",
