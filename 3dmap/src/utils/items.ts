@@ -42,13 +42,13 @@ export const UNITS: IBaseModel[] = [
     {
         id: "378c8b26-7303-4d43-b630-605e56af855c",
         name: "Polisi K9",
-        height: 10,
+        height: 30,
         rotation: {
             x : 0,
             y : 0,
             z : 90,
         },
-        modelUrl: "/dog_anim.glb",
+        modelUrl: "/k9.glb",
         animation: true,
         /*
         child: {
@@ -416,6 +416,30 @@ export const KENDARAANS:  IBaseModel[] = [
         modelUrl: "/mobil_gegana_anim.glb",
         animation: true,
     },
+    {
+        id: "70a63031-d042-4ce1-922b-e27d8c45bb14",
+        name: "Public Address",
+        height: 35,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/public_address.glb",
+        animation: true,
+    },
+    {
+        id: "ee8c0e58-7923-4493-a0c8-74aa2895b685",
+        name: "Mobil Samapta",
+        height: 23,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 180,
+        },
+        modelUrl: "/mobil_samapta.glb",
+        animation: true,
+    },
 ]
 
 export const STACKHOLDERS: IBaseModel[] = [
@@ -615,9 +639,9 @@ export const BANGUNANS: IBaseModel[] = [
         rotation: {
             x : 0,
             y : 0,
-            z : 180,
+            z : 90,
         },
-        modelUrl: "/kantor_bank.glb",
+        modelUrl: "/bank.glb",
         animation: false,
     },
     {
@@ -670,14 +694,122 @@ export const BANGUNANS: IBaseModel[] = [
     },
     {
         id: "fc54c3eb-fc1e-4f97-a420-053b607a43e3",
-        name: "Gedung",
+        name: "Apartemen",
         height: 100,
         rotation: {
             x : 0,
             y : 0,
             z : 180,
         },
-        modelUrl: "/gedung_biasa.glb",
+        modelUrl: "/apartemen.glb",
         animation: false,
-    }
+    },
+    {
+        id: "ba9d9fbf-343a-417e-a556-40529cac8917",
+        name: "Pura",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/pura.glb",
+        animation: false,
+    },
+    {
+        id: "c47ce1ba-0a94-4e21-988b-0c16465df07f",
+        name: "Gereja",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/gereja.glb",
+        animation: false,
+    },
+    {
+        id: "e2fc0063-147c-4b67-9baa-05e9c6f3971b",
+        name: "Gedung",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/gedung.glb",
+        animation: false,
+    },
+    {
+        id: "d26a805b-846d-4f24-aa47-29f2675a6d8b",
+        name: "Masjid",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/masjid.glb",
+        animation: false,
+    },
+    {
+        id: "d9ed8342-a182-436e-b620-795e7eb19a4e",
+        name: "Pospam Lebaran",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/pospam_lebaran.glb",
+        animation: false,
+    },
+    {
+        id: "3e1fd8d6-733d-4871-b700-bc5543eb9e62",
+        name: "Pospam Natal",
+        height: 40,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/pospam_natal.glb",
+        animation: false,
+    },
+    {
+        id: "2ccbe0a4-793c-4707-87e6-3f4af2e6b558",
+        name: "Pasar",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/pasar.glb",
+        animation: false,
+    },
+    {
+        id: "2ccbe0a4-793c-4707-87e6-3f4af2e6b558",
+        name: "Supermarket",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 90,
+        },
+        modelUrl: "/supermarket.glb",
+        animation: false,
+    },
+    {
+        id: "37dd9fda-2d10-4f7a-9eb1-f89bd8466ec4",
+        name: "Sekolah",
+        height: 60,
+        rotation: {
+            x : 0,
+            y : 0,
+            z : 180,
+        },
+        modelUrl: "/sekolah.glb",
+        animation: false,
+    },
 ]

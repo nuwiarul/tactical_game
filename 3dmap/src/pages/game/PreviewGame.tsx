@@ -1,11 +1,11 @@
 import {useEffect, useRef, useState} from "react";
 import {control, GLTFLayer, GLTFMarker, Map} from "maptalks-gl";
 import {
-    createBaseLayerSwitcher,
+    createBaseLayerSwitcher, createBearingControl,
     createCompassControl, createGroupGltfLayer,
-    createMap, createMapEventModelControl,
+    createMap, createMapEventModelControl, createPitchControl,
     createSatelliteLayer,
-    createStreetLayer, createThreeLayer, getGltfLayerWithGroup
+    createStreetLayer, createThreeLayer, createZoomControl, getGltfLayerWithGroup
 } from "@/helpers/maps.ts";
 import {config} from "@/utils/constants.ts";
 import {useParams} from "react-router-dom";
@@ -123,6 +123,9 @@ const PreviewGame = ({isRecord}: {isRecord: number}) => {
             const satelliteLayer = createSatelliteLayer();
             mapInstance.current = createMap(mapRef.current, streetLayer, [valCenterX, valCenterY], valZoom, valPitch, config.maxZoom);
             createCompassControl(mapInstance.current);
+            createZoomControl(mapInstance.current);
+            createBearingControl(mapInstance.current);
+            createPitchControl(mapInstance.current);
             createBaseLayerSwitcher(mapInstance.current, streetLayer, satelliteLayer, callbackLayerSwitcher);
             console.log(valName);
             textPanel.current = new control.Panel({

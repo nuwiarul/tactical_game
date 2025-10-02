@@ -9,11 +9,11 @@ import {API_PATHS} from "@/utils/apiPaths.ts";
 import {consoleErrorApi} from "@/helpers/logs.ts";
 import MainLayout from "@/layouts/MainLayout.tsx";
 import {
-    createBaseLayerSwitcher,
+    createBaseLayerSwitcher, createBearingControl,
     createCompassControl, createGroupGltfLayer,
-    createMap, createMapEventModelControl,
+    createMap, createMapEventModelControl, createPitchControl,
     createSatelliteLayer,
-    createStreetLayer, createThreeLayer, getGltfLayerWithGroup
+    createStreetLayer, createThreeLayer, createZoomControl, getGltfLayerWithGroup
 } from "@/helpers/maps.ts";
 import SkenarioSettingsSheet from "@/pages/skenarios/SkenarioSettingsSheet.tsx";
 import AddUnitSheet from "@/pages/skenarios/AddUnitSheet.tsx";
@@ -99,6 +99,9 @@ const SkenarioPlotPage = () => {
             const satelliteLayer = createSatelliteLayer();
             mapInstance.current = createMap(mapRef.current, streetLayer, [valCenterX, valCenterY], valZoom, valPitch, config.maxZoom);
             createCompassControl(mapInstance.current);
+            createZoomControl(mapInstance.current);
+            createBearingControl(mapInstance.current);
+            createPitchControl(mapInstance.current);
             createBaseLayerSwitcher(mapInstance.current, streetLayer, satelliteLayer);
             console.log(valName);
             const textPanel = new control.Panel({
@@ -164,7 +167,7 @@ const SkenarioPlotPage = () => {
 
             new control.Toolbar({
                 'vertical': true,
-                'position': {'top': 120, 'left': 20},
+                'position': {'top': 220, 'left': 20},
                 'items': [{
                     item: 'Buat Unit',
                     click: function () {
