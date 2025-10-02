@@ -12,7 +12,7 @@ import {Link} from "react-router-dom";
 import {Button} from "@/components/ui/button.tsx";
 import {toast} from "sonner";
 
-type IUserUnit = {
+export type IUserUnit = {
     id: string;
     name: string;
     created_at: string;

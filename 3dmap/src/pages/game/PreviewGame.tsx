@@ -30,6 +30,7 @@ import {useIdentify} from "@/context/AuthProvider.tsx";
 import type {IBaseModel} from "@/utils/items.ts";
 import {useEffectOnce} from "react-use";
 import {Centrifuge} from "centrifuge";
+import {formatRouteData, RoutePlayer} from "maptalks.routeplayer";
 
 
 const PreviewGame = ({isRecord}: { isRecord: number }) => {
@@ -46,6 +47,7 @@ const PreviewGame = ({isRecord}: { isRecord: number }) => {
     const buildingInstance = useRef<ExtrudePolygon[]>([]);
     const unitsInstance = useRef<IBaseModel[]>([]);
     const unitRoleInstance = useRef("admin");
+    const markerIdInstance = useRef("");
 
 
     const {operasi_id, skenario_id} = useParams();
@@ -390,6 +392,7 @@ const PreviewGame = ({isRecord}: { isRecord: number }) => {
     }
 
     const callbackModelControl = (id: string, command: string, data: string) => {
+        markerIdInstance.current = id;
         publish(command, data, operasi_id as string, skenarioIdInstance.current, id, isRecord);
     }
 
@@ -515,6 +518,57 @@ const PreviewGame = ({isRecord}: { isRecord: number }) => {
         }
     }
 
+    const move = (data: string, marker_id: string) => {
+        if (marker_id !== markerIdInstance.current) {
+            for (let i = 0; i < markerInstance.current.length; i++) {
+                const marker = markerInstance.current[i] as GLTFMarker;
+                const properties = marker.getProperties() as IObjectProperties;
+                if (properties.id === marker_id) {
+                    const geom = JSON.parse(data);
+                    const coord = marker.getCoordinates();
+                    const route = [{
+                        coordinate: [coord.x, coord.y, 0],
+                    },
+                        {
+                            coordinate: [geom.x, geom.y, 0],
+                        },
+                        //other coordinates
+                    ];
+                    const dataCoordinates = formatRouteData(route, { duration: 10000 });
+
+                    const player = new RoutePlayer(dataCoordinates, { speed: 4, debug: false });
+                    player.on('playstart playing playend vertex pause', (e: { type?: string; coordinate?: object; }) => {
+                        if (e.type === "playstart") {
+                            marker.setCurrentAnimation("Idle|Walk")
+                        } else if (e.type === "playend") {
+                            marker.setCurrentAnimation("Idle|Idle")
+                            player.finish();
+                        } else if (e.type === "playing") {
+                            const { coordinate } = e;
+                            marker.setCoordinates(coordinate);
+                        }
+                    })
+                    player.play();
+                    break;
+                }
+            }
+        }
+    }
+
+    const rot = (data: string, marker_id: string) => {
+        if (marker_id !== markerIdInstance.current) {
+            for (let i = 0; i < markerInstance.current.length; i++) {
+                const marker = markerInstance.current[i] as GLTFMarker;
+                const properties = marker.getProperties() as IObjectProperties;
+                if (properties.id === marker_id) {
+                    const geom = JSON.parse(data)
+                    marker.setRotation(geom.x, geom.y, geom.z)
+                    break;
+                }
+            }
+        }
+    }
+
 
 
     useEffectOnce(() => {
@@ -547,9 +601,9 @@ const PreviewGame = ({isRecord}: { isRecord: number }) => {
                         getSkenario(data.skenario_id as string);
                     }
                 } else if (data.command === "MOVE") {
-                    //move(data.data, data.marker_id);
+                    move(data.data, data.marker_id);
                 } else if (data.command === "ROT") {
-                    //rot(data.data, data.marker_id);
+                    rot(data.data, data.marker_id);
                 } else if (data.command === "ZOOM") {
                     //zoom(data.data);
                     if (unitRoleInstance.current === "user") {
